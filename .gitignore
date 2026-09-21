@@ -1,0 +1,18 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Variables de entorno
+.env
+**/.env
+
+# Archivos de macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+*.log
+
+# Vite / producción
+dist/
+**/dist/
