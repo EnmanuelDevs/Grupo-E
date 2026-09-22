@@ -4,10 +4,6 @@ import connectDB from "./config/db.js";
 
 dotenv.config();
 
-console.log(
-  "MONGO_URI cargada:",
-  process.env.MONGO_URI ? "Sí" : "No"
-);
 
 const PORT = process.env.PORT || 3000;
 
