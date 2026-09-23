@@ -75,3 +75,24 @@ export const loginUsuario = async (req, res) => {
         return res.status(500).json({ success: false, data: null, error: 'Error del servidor' });
     }
 };
+
+
+export const obtenerPerfil = async (req, res) => {
+    try {
+        const usuario = await User.findById(req.usuario.id).select('-password');
+
+        if (!usuario) {
+            return res.status(404).json({ success: false, data: null, error: 'Usuario no encontrado' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: usuario,
+            error: null
+        });
+
+    } catch (error) {
+        console.error("Error al obtener perfil:", error);
+        return res.status(500).json({ success: false, data: null, error: 'Error del servidor al obtener el perfil' });
+    }
+};
