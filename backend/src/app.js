@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -9,5 +10,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.json({ message: "API del sistema de reservas del gimnasio funcionando" });
 });
+
+app.use("/api/auth", authRoutes);
 
 export default app;
