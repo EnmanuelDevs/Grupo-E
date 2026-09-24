@@ -1,51 +1,47 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { apiRequest } from "../../services/api";
 import "./login.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     setError("");
+    setSubmitting(true);
 
     try {
-      console.log("1. Enviando petición de login con:", { email, password });
-
-      const response = await fetch("http://localhost:3000/api/auth/login", {
+      const data = await apiRequest("/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+        body: { email: email.trim(), password },
       });
-
-      console.log("2. Status de la respuesta del backend:", response.status);
-
-      const data = await response.json();
-      console.log("3. Datos completos que devuelve el backend:", data);
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || "Credenciales inválidas");
+      if (!data?.token || !data?.usuario?.role) {
+        throw new Error("La respuesta del servidor no contiene una sesión válida.");
       }
 
-      // Validamos dónde viene el token (por si viene dentro de data.token o data.data.token)
-      const token = data.token || data.data?.token;
-
-      if (!token) {
-        throw new Error("El servidor respondió pero no envió un token válido");
+      // Solo enviamos a pantallas que existen en esta versión.
+      const destinations = {
+        admin: "/admin-dashboard",
+        member: "/member-dashboard",
+      };
+      const destination = destinations[data.usuario.role];
+      if (!destination) {
+        throw new Error("El panel de instructor todavía no está disponible.");
       }
 
-      console.log("4. Token obtenido con éxito:", token);
-      localStorage.setItem("token", token);
-
-      navigate("/member-dashboard");
+      localStorage.setItem("token", data.token);
+      navigate(destination, { replace: true });
     } catch (err) {
-      console.error("❌ Error atrapado en el login:", err);
       setError(err.message || "Error al conectar con el servidor");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -59,11 +55,12 @@ function Login() {
         <div className="login-form">
           <h1>Iniciar sesión</h1>
 
-          {error && (
+          {(error || location.state?.message) && (
             <div
+              role="alert"
               style={{ color: "red", marginBottom: "10px", fontSize: "14px" }}
             >
-              {error}
+              {error || location.state?.message}
             </div>
           )}
 
@@ -73,6 +70,7 @@ function Login() {
               <input
                 type="email"
                 id="email"
+                autoComplete="username"
                 placeholder="correo@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -85,6 +83,7 @@ function Login() {
               <input
                 type="password"
                 id="password"
+                autoComplete="current-password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -96,7 +95,9 @@ function Login() {
               </a>
             </div>
 
-            <button type="submit">Iniciar sesión</button>
+            <button type="submit" disabled={submitting}>
+              {submitting ? "Ingresando…" : "Iniciar sesión"}
+            </button>
           </form>
         </div>
 
