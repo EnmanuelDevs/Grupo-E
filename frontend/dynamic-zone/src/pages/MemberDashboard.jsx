@@ -96,7 +96,7 @@ const MemberDashboard = () => {
 
       <main className="dashboard-grid">
         <section className="dashboard-card">
-          <h2>🏋️ Clases y Cupos Disponibles</h2>
+          <h2>Clases y Cupos Disponibles</h2>
           {classes.length === 0 ? (
             <p className="empty-text">
               No hay clases programadas por el momento.
@@ -129,7 +129,7 @@ const MemberDashboard = () => {
         </section>
 
         <section className="dashboard-card">
-          <h2>📅 Mis Reservas</h2>
+          <h2>Mis Reservas</h2>
           <p className="empty-text">
             Aquí podrás ver y cancelar las clases que hayas reservado.
           </p>
