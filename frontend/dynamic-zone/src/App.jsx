@@ -1,13 +1,18 @@
-import { useState } from 'react'
-import Login from "./components/login/login"
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./components/login/login";
+import MemberDashboard from "./pages/MemberDashboard";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <Login />
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+
+        <Route path="/member-dashboard" element={<MemberDashboard />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
