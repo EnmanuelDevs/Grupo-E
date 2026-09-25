@@ -30,6 +30,7 @@ function Login() {
       const destinations = {
         admin: "/admin-dashboard",
         member: "/member-dashboard",
+        instructor: "/instructor-dashboard"
       };
       const destination = destinations[data.usuario.role];
       if (!destination) {

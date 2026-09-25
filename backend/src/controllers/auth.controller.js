@@ -6,8 +6,12 @@ export const registerUsuario = async (req, res) => {
     try {
         const { name, lastName, email, password, role } = req.body;
 
-        if (!name || !lastName || !email || !password || !role) {
-            return res.status(400).json({ success: false, data: null, error: 'Faltan campos obligatorios' });
+        if (!name || !lastName || !email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                data: null, 
+                error: 'Faltan campos obligatorios' 
+            });
         }
 
         const usuarioExistente = await User.findOne({ email });

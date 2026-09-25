@@ -80,18 +80,19 @@ const MemberDashboard = () => {
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <h1>Panel de Miembro - Gimnasio</h1>
-        <div className="user-info">
-          <span>
-            Hola,{" "}
-            <b>
-              {user?.name} {user?.lastName}
-            </b>
-          </span>
-          <button onClick={handleLogout} className="logout-btn">
-            Cerrar Sesión
-          </button>
+
+        <div className="dashboard-title">
+          <h1>Panel de Miembro</h1>
+
+          <p className="member-welcome">
+            Bienvenido, <strong>{user?.name} {user?.lastName}</strong>
+          </p>
         </div>
+
+        <button onClick={handleLogout} className="logout-btn">
+          Cerrar Sesión
+        </button>
+
       </header>
 
       <main className="dashboard-grid">
