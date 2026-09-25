@@ -45,6 +45,8 @@ const InstructorDashboard = () => {
 
                 setUser(userData.data);
 
+                const instructorName = `${userData.data.name} ${userData.data.lastName}`;
+
                 const classesRes = await fetch(
                     "http://localhost:3000/api/classes",
                     {
@@ -57,7 +59,11 @@ const InstructorDashboard = () => {
                 const classesData = await classesRes.json();
 
                 if (classesData.success) {
-                    setClasses(classesData.data);
+                    const assignedClasses = classesData.data.filter(
+                        (classItem) => classItem.instructor === instructorName
+                    );
+
+                    setClasses(assignedClasses);
                 }
 
             } catch (error) {

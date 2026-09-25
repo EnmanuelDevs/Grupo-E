@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../services/api";
+import CreateClass from "../components/admin/CreateClass";
 import "./admin-dashboard.css";
 
 function AdminDashboard() {
@@ -95,6 +96,10 @@ function AdminDashboard() {
     setAttempt((value) => value + 1);
   }
 
+  function handleClassCreated() {
+    reload();
+}
+
   if (loading) {
     return <main className="admin-status" role="status">Cargando panel administrativo…</main>;
   }
@@ -155,6 +160,8 @@ function AdminDashboard() {
           <article className="admin-stat"><p>Sin cupos registrados</p><strong>{classesError ? "—" : withoutSpots}</strong><span>Clases con cero cupos o menos</span></article>
         </section>
         <p className="admin-note">Disponibilidad según los registros actuales. Las reservas todavía no están habilitadas.</p>
+
+        <CreateClass onClassCreated={handleClassCreated} />
 
         <section className="admin-panel" id="admin-classes" aria-labelledby="admin-classes-title">
           <div className="admin-panel-heading">
