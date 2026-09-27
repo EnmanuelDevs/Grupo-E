@@ -30,8 +30,13 @@ function CreateClass({ onClassCreated }) {
         setMessage("");
         setError("");
 
+        if (formData.capacity < 0 || formData.availableSpots < 0) {
+            setError("La capacidad y los cupos disponibles no pueden ser negativos.");
+            return;
+        }
+
         try {
-            
+
             const token = localStorage.getItem("token");
 
             const data = await apiRequest('/classes', {
@@ -58,7 +63,7 @@ function CreateClass({ onClassCreated }) {
                 instructor: "",
                 capacity: ""
             });
-            
+
         } catch (error) {
             console.error("Error creando la clase:", error);
             setError(error.message || "No se pudo crear la clase.");
@@ -66,60 +71,61 @@ function CreateClass({ onClassCreated }) {
     };
 
     return (
-    <section className="create-class">
-        <h2>Crear nueva clase</h2>
+        <section className="create-class">
+            <h2>Crear nueva clase</h2>
 
-        {message && <p className="create-class-message">{message}</p>}
-        {error && <p className="create-class-error">{error}</p>}
+            {message && <p className="create-class-message">{message}</p>}
+            {error && <p className="create-class-error">{error}</p>}
 
-        <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
 
-            <label>
-                Nombre de la clase
-                <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                />
-            </label>
+                <label>
+                    Nombre de la clase
+                    <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                    />
+                </label>
 
-            <label>
-                Descripción
-                <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                />
-            </label>
+                <label>
+                    Descripción
+                    <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                    />
+                </label>
 
-            <label>
-                Instructor
-                <input
-                    type="text"
-                    name="instructor"
-                    value={formData.instructor}
-                    onChange={handleChange}
-                />
-            </label>
+                <label>
+                    Instructor
+                    <input
+                        type="text"
+                        name="instructor"
+                        value={formData.instructor}
+                        onChange={handleChange}
+                    />
+                </label>
 
-            <label>
-                Capacidad
-                <input
-                    type="number"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleChange}
-                />
-            </label>
+                <label>
+                    Capacidad
+                    <input
+                        type="number"
+                        name="capacity"
+                        min="0"
+                        value={formData.capacity}
+                        onChange={handleChange}
+                    />
+                </label>
 
-            <button type="submit">
-                Crear clase
-            </button>
+                <button type="submit">
+                    Crear clase
+                </button>
 
-        </form>
-    </section>
-);
+            </form>
+        </section>
+    );
 
 
 }

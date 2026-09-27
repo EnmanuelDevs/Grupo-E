@@ -9,6 +9,7 @@ function UsersManagement() {
     const [error, setError] = useState("");
     const [showForm, setShowForm] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [usersExpanded, setUsersExpanded] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         lastName: "",
@@ -47,6 +48,21 @@ function UsersManagement() {
 
             await loadUsers();
 
+            await Swal.fire({
+                title: editingUser ? "Usuario actualizado" : "Usuario creado",
+                text: editingUser
+                    ? "Los datos del usuario se actualizaron correctamente."
+                    : "El usuario se creó correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+
+                customClass: {
+                    popup: "gym-swal-popup",
+                    confirmButton: "gym-swal-confirm",
+                    cancelButton: "gym-swal-cancel"
+                }
+            });
+
             setFormData({
                 name: "",
                 lastName: "",
@@ -60,7 +76,21 @@ function UsersManagement() {
 
         } catch (error) {
             console.error("Error al crear usuario:", error);
-            setError(error.message || "No se pudo crear el usuario.");
+
+            await Swal.fire({
+                title: "Error",
+                text: error.message || "No se pudo completar la operación.",
+                icon: "error",
+                confirmButtonText: "Aceptar",
+
+                customClass: {
+                    popup: "gym-swal-popup",
+                    confirmButton: "gym-swal-confirm",
+                    cancelButton: "gym-swal-cancel"
+                }
+            });
+
+            setError("");
         }
     };
 
@@ -176,7 +206,9 @@ function UsersManagement() {
 
     return (
         <section className="users-management">
+
             <div className="users-management-header">
+
                 {showForm && (
                     <div className="user-modal-overlay">
                         <form
@@ -187,7 +219,9 @@ function UsersManagement() {
                                 <img src="/icons/user_icon.svg" alt="" />
 
                                 <h3>
-                                    {editingUser ? "Editar usuario" : "Crear usuario"}
+                                    {editingUser
+                                        ? "Editar usuario"
+                                        : "Crear usuario"}
                                 </h3>
                             </div>
 
@@ -236,6 +270,7 @@ function UsersManagement() {
                             </select>
 
                             <div className="user-form-actions">
+
                                 <button
                                     type="button"
                                     onClick={handleCloseForm}
@@ -244,77 +279,124 @@ function UsersManagement() {
                                 </button>
 
                                 <button type="submit">
-                                    {editingUser ? "Guardar cambios" : "Crear usuario"}
+                                    {editingUser
+                                        ? "Guardar cambios"
+                                        : "Crear usuario"}
                                 </button>
+
                             </div>
                         </form>
                     </div>
                 )}
+
                 <h2>Gestión de usuarios</h2>
 
-                <button
-                    type="button"
-                    className="add-user-button"
-                    onClick={() => setShowForm(true)}
-                >
-                    <img
-                        src="/icons/add_icon.svg"
-                        alt=""
-                    />
+                <div className="users-management-actions">
 
-                    Crear usuario
-                </button>
+                    <button
+                        type="button"
+                        className="add-user-button"
+                        onClick={() => setShowForm(true)}
+                    >
+                        <img
+                            src="/icons/add_icon.svg"
+                            alt=""
+                        />
+                        Crear usuario
+                    </button>
+
+                    <button
+                        type="button"
+                        className="toggle-users-button"
+                        onClick={() => setUsersExpanded(!usersExpanded)}
+                        aria-label={
+                            usersExpanded
+                                ? "Minimizar gestión de usuarios"
+                                : "Mostrar gestión de usuarios"
+                        }
+                    >
+                        <img
+                            src={
+                                usersExpanded
+                                    ? "/icons/chevron-up.svg"
+                                    : "/icons/chevron-down.svg"
+                            }
+                            alt=""
+                        />
+                    </button>
+
+                </div>
+
             </div>
 
-            {loading && <p>Cargando usuarios...</p>}
+            {usersExpanded && (
+                <>
+                    {loading && <p>Cargando usuarios...</p>}
 
-            {error && <p>{error}</p>}
+                    {error && <p>{error}</p>}
 
-            {!loading && !error && (
-                <div className="users-list">
-                    {users.map((user) => (
-                        <div className="user-item" key={user._id}>
-                            <div>
-                                <strong>
-                                    {user.name} {user.lastName}
-                                </strong>
+                    {!loading && !error && (
+                        <div className="users-list">
 
-                                <p>{user.email}</p>
-                            </div>
-
-                            <div className="user-actions">
-                                <span>{user.role}</span>
-
-                                <button
-                                    type="button"
-                                    className="user-action-button"
-                                    onClick={() => handleEditUser(user)}
-                                    aria-label={`Editar usuario ${user.name}`}
+                            {users.map((user) => (
+                                <div
+                                    className="user-item"
+                                    key={user._id}
                                 >
-                                    <img
-                                        src="/icons/edit_icon.svg"
-                                        alt=""
-                                    />
-                                </button>
 
-                                <button
-                                    type="button"
-                                    className="user-action-button"
-                                    onClick={() => handleDeleteUser(user._id)}
-                                    aria-label={`Eliminar usuario ${user.name}`}
-                                >
-                                    <img
-                                        src="/icons/delete_icon.svg"
-                                        alt=""
-                                    />
-                                </button>
-                            </div>
+                                    <div>
+                                        <strong>
+                                            {user.name} {user.lastName}
+                                        </strong>
+
+                                        <p>{user.email}</p>
+                                    </div>
+
+                                    <div className="user-actions">
+
+                                        <span>{user.role}</span>
+
+                                        <button
+                                            type="button"
+                                            className="user-action-button"
+                                            onClick={() =>
+                                                handleEditUser(user)
+                                            }
+                                            aria-label={`Editar usuario ${user.name}`}
+                                        >
+                                            <img
+                                                src="/icons/edit_icon.svg"
+                                                alt=""
+                                            />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="user-action-button"
+                                            onClick={() =>
+                                                handleDeleteUser(user._id)
+                                            }
+                                            aria-label={`Eliminar usuario ${user.name}`}
+                                        >
+                                            <img
+                                                src="/icons/delete_icon.svg"
+                                                alt=""
+                                            />
+                                        </button>
+
+                                    </div>
+
+                                </div>
+                            ))}
+
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
+
         </section>
     );
+
 }
 
 export default UsersManagement;

@@ -43,7 +43,14 @@ export const createClass = async (req, res) => {
     } catch (error) {
         console.log("Error creando la clase:", error);
 
-        res.status(500).json({
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                success: false,
+                error: "La capacidad debe ser un número mayor o igual a 0."
+            });
+        }
+
+        return res.status(500).json({
             success: false,
             error: "Error del servidor al crear la clase"
         });
