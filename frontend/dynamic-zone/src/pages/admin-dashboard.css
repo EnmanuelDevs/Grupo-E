@@ -184,7 +184,8 @@
   position: relative;
   z-index: 2;
 
-  margin-top: auto;
+  align-self: stretch;
+  margin-top: 20px;
 
   padding: 12px;
 

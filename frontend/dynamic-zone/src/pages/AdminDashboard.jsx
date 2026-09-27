@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../services/api";
 import CreateClass from "../components/admin/CreateClass";
+import UsersManagement from "../components/admin/UsersManagement";
 import "./admin-dashboard.css";
 
 function AdminDashboard() {
@@ -161,8 +162,12 @@ function AdminDashboard() {
         </section>
         <p className="admin-note">Disponibilidad según los registros actuales. Las reservas todavía no están habilitadas.</p>
 
+        
+        <UsersManagement />
         <CreateClass onClassCreated={handleClassCreated} />
 
+        
+        
         <section className="admin-panel" id="admin-classes" aria-labelledby="admin-classes-title">
           <div className="admin-panel-heading">
             <div><h2 id="admin-classes-title">Clases registradas</h2><p>Consulta la actividad y los cupos de tu gimnasio.</p></div>
