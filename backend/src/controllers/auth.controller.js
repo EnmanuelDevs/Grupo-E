@@ -163,7 +163,7 @@ export const crearUsuarioAdmin = async (req, res) => {
             name,
             lastName,
             email,
-            password,
+            password: passwordEncriptada,
             role
         });
 
