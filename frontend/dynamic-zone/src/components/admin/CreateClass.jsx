@@ -30,8 +30,10 @@ function CreateClass({ onClassCreated }) {
         setMessage("");
         setError("");
 
-        if (formData.capacity < 0 || formData.availableSpots < 0) {
-            setError("La capacidad y los cupos disponibles no pueden ser negativos.");
+        const capacity = Number(formData.capacity);
+
+        if (!Number.isInteger(capacity) || capacity <= 0) {
+            setError("La capacidad debe ser un número entero mayor que cero.");
             return;
         }
 
@@ -113,7 +115,9 @@ function CreateClass({ onClassCreated }) {
                     <input
                         type="number"
                         name="capacity"
-                        min="0"
+                        min="1"
+                        step="1"
+                        required
                         value={formData.capacity}
                         onChange={handleChange}
                     />

@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../services/api";
 import CreateClass from "../components/admin/CreateClass";
+import CapacityManagement
+from "../components/admin/CapacityManagement";
 import UsersManagement from "../components/admin/UsersManagement";
+
+
 import "./admin-dashboard.css";
 
 function AdminDashboard() {
@@ -166,7 +170,10 @@ function AdminDashboard() {
         <UsersManagement />
         <CreateClass onClassCreated={handleClassCreated} />
 
-        
+        <CapacityManagement
+          classes={classes}
+          onCapacityUpdated={reload}
+        />
         
         <section className="admin-panel" id="admin-classes" aria-labelledby="admin-classes-title">
           <div className="admin-panel-heading">
