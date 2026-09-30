@@ -27,8 +27,6 @@ const MemberDashboard = () => {
           throw new Error("Sesión inválida");
         }
 
-        // --- VALIDACIÓN DE ROL (TAREA 4) ---
-        // Si el rol no es "member" (por ejemplo, es admin o instructor), se bloquea el acceso
         if (userData.data.role !== "member") {
           alert("Acceso denegado: Esta sección es exclusiva para miembros.");
           localStorage.removeItem("token");
@@ -80,19 +78,20 @@ const MemberDashboard = () => {
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-
         <div className="dashboard-title">
           <h1>Panel de Miembro</h1>
 
           <p className="member-welcome">
-            Bienvenido, <strong>{user?.name} {user?.lastName}</strong>
+            Bienvenido,{" "}
+            <strong>
+              {user?.name} {user?.lastName}
+            </strong>
           </p>
         </div>
 
         <button onClick={handleLogout} className="logout-btn">
           Cerrar Sesión
         </button>
-
       </header>
 
       <main className="dashboard-grid">
@@ -112,6 +111,46 @@ const MemberDashboard = () => {
                     <p style={{ fontSize: "12px", color: "#4b5563" }}>
                       Instructor: {cls.instructor}
                     </p>
+
+                    {cls.schedules && cls.schedules.length > 0 ? (
+                      <div
+                        className="class-schedules"
+                        style={{
+                          marginTop: "10px",
+                          marginBottom: "10px",
+                          fontSize: "14px",
+                          color: "#374151",
+                        }}
+                      >
+                        <strong>Horarios:</strong>
+                        <ul
+                          style={{
+                            listStyleType: "none",
+                            padding: 0,
+                            marginTop: "5px",
+                          }}
+                        >
+                          {cls.schedules.map((schedule, index) => (
+                            <li key={index} style={{ marginBottom: "4px" }}>
+                              📅 {schedule.date} a las ⏰ {schedule.time}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p
+                        style={{
+                          fontSize: "13px",
+                          color: "#9ca3af",
+                          fontStyle: "italic",
+                          marginTop: "10px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        Aún no hay horarios asignados.
+                      </p>
+                    )}
+
                     <span className="spots-badge">
                       Cupos disponibles: <b>{cls.availableSpots}</b> /{" "}
                       {cls.capacity}
