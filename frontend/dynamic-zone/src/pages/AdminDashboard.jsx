@@ -5,7 +5,7 @@ import CreateClass from "../components/admin/CreateClass";
 import CapacityManagement
 from "../components/admin/CapacityManagement";
 import UsersManagement from "../components/admin/UsersManagement";
-
+import EditClass from "../components/admin/EditClass";
 
 import "./admin-dashboard.css";
 
@@ -170,6 +170,11 @@ function AdminDashboard() {
         <UsersManagement />
         <CreateClass onClassCreated={handleClassCreated} />
 
+        <EditClass
+          classes={classes}
+          onClassUpdated={reload}
+        />
+        
         <CapacityManagement
           classes={classes}
           onCapacityUpdated={reload}

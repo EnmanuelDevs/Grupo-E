@@ -104,3 +104,72 @@ export const updateCapacity = async (req, res) => {
     });
   }
 };
+
+export const updateClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+
+    // Comprobar que se envió información para modificar
+    if (title === undefined && description === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: "Debes proporcionar al menos un campo para actualizar."
+      });
+    }
+
+    // Buscar la clase
+    const gymClass = await Class.findById(id);
+
+    if (!gymClass) {
+      return res.status(404).json({
+        success: false,
+        error: "Clase no encontrada."
+      });
+    }
+
+    // Validar y actualizar título
+    if (title !== undefined) {
+      const cleanTitle = title.trim();
+
+      if (!cleanTitle) {
+        return res.status(400).json({
+          success: false,
+          error: "El nombre de la clase no puede estar vacío."
+        });
+      }
+
+      gymClass.title = cleanTitle;
+    }
+
+    // Validar y actualizar descripción
+    if (description !== undefined) {
+      const cleanDescription = description.trim();
+
+      if (!cleanDescription) {
+        return res.status(400).json({
+          success: false,
+          error: "La descripción no puede estar vacía."
+        });
+      }
+
+      gymClass.description = cleanDescription;
+    }
+
+    await gymClass.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Clase actualizada correctamente.",
+      data: gymClass
+    });
+
+  } catch (error) {
+    console.error("Error actualizando clase:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: "Error del servidor al actualizar la clase."
+    });
+  }
+};

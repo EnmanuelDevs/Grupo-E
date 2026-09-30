@@ -3,6 +3,7 @@ import express from "express";
 import {
   getClasses,
   createClass,
+  updateClass,
   updateCapacity,
 } from "../controllers/class.controller.js";
 
@@ -24,6 +25,12 @@ router.post(
   verificarToken,
   verificarAdmin,
   asignarHorario
+);
+router.patch(
+  "/:id",
+  verificarToken,
+  verificarAdmin,
+  updateClass
 );
 
 router.patch(

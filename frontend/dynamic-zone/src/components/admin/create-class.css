@@ -30,17 +30,16 @@
 }
 
 .create-class input,
-.create-class textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 12px;
-    background: #ffffff;
-    font: inherit;
-    color: #111827;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.create-class textarea,
+.create-class select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #ffffff;
+  font: inherit;
+  color: #111827;
 }
 
 .create-class textarea {
