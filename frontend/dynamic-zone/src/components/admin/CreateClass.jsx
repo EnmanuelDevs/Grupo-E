@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiRequest } from "../../services/api";
 import "./create-class.css";
 
@@ -14,6 +14,50 @@ function CreateClass({ onClassCreated }) {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const [instructors, setInstructors] = useState([]);
+
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await apiRequest("/auth/users", {
+          method: "GET",
+          token,
+        });
+
+        console.log("Respuesta del backend (/auth/users):", response);
+
+        const usersList =
+          response.data || response.usuarios || response.users || response;
+
+        if (Array.isArray(usersList)) {
+          const availableInstructors = usersList.filter(
+            (user) =>
+              (user.role === "instructor" || user.rol === "instructor") &&
+              user.isActive !== false,
+          );
+
+          console.log(
+            "Instructores filtrados listos para mostrar:",
+            availableInstructors,
+          );
+          setInstructors(availableInstructors);
+        } else {
+          console.warn(
+            "El backend no devolvió un array válido de usuarios.",
+            usersList,
+          );
+        }
+      } catch (err) {
+        console.error("Error cargando instructores:", err);
+        setError("Hubo un problema al cargar la lista de instructores.");
+      }
+    };
+
+    fetchInstructors();
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -39,6 +83,11 @@ function CreateClass({ onClassCreated }) {
 
     if (!formData.date || !formData.time) {
       setError("La fecha y la hora son obligatorias para crear la clase.");
+      return;
+    }
+
+    if (!formData.instructor) {
+      setError("Debes seleccionar un instructor para la clase.");
       return;
     }
 
@@ -69,7 +118,6 @@ function CreateClass({ onClassCreated }) {
         });
       }
 
-      console.log("Clase y horario creados correctamente.");
       setMessage("Clase y horario creados correctamente.");
 
       if (onClassCreated) {
@@ -105,6 +153,7 @@ function CreateClass({ onClassCreated }) {
           <input
             type="text"
             name="title"
+            required
             value={formData.title}
             onChange={handleChange}
           />
@@ -114,6 +163,7 @@ function CreateClass({ onClassCreated }) {
           Descripción
           <textarea
             name="description"
+            required
             value={formData.description}
             onChange={handleChange}
           />
@@ -121,12 +171,19 @@ function CreateClass({ onClassCreated }) {
 
         <label>
           Instructor
-          <input
-            type="text"
+          <select
             name="instructor"
+            required
             value={formData.instructor}
             onChange={handleChange}
-          />
+          >
+            <option value="">Selecciona un instructor</option>
+            {instructors.map((inst) => (
+              <option key={inst._id} value={inst._id}>
+                {inst.name} {inst.lastName}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label>

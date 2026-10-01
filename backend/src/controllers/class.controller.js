@@ -1,17 +1,26 @@
 import Class from "../models/class.model.js";
 import Schedule from "../models/schedule.model.js";
+import User from "../models/User.js";
 
 export const getClasses = async (req, res) => {
   try {
-    const classes = await Class.find().lean();
+    const classes = await Class.find()
+      .populate("instructor", "name lastName")
+      .lean();
 
     const classesWithSchedules = await Promise.all(
       classes.map(async (gymClass) => {
         const schedules = await Schedule.find({ classId: gymClass._id }).select(
           "date time -_id",
         );
+
+        const instructorFullName = gymClass.instructor
+          ? `${gymClass.instructor.name} ${gymClass.instructor.lastName}`
+          : "Instructor no asignado";
+
         return {
           ...gymClass,
+          instructor: instructorFullName,
           schedules: schedules,
         };
       }),
@@ -33,6 +42,30 @@ export const getClasses = async (req, res) => {
 export const createClass = async (req, res) => {
   try {
     const { title, description, instructor, capacity } = req.body;
+
+    const instructorUser = await User.findById(instructor);
+    if (!instructorUser) {
+      return res.status(404).json({
+        success: false,
+        error: "El usuario seleccionado como instructor no existe.",
+      });
+    }
+
+    if (instructorUser.role !== "instructor") {
+      return res.status(403).json({
+        success: false,
+        error:
+          "El usuario seleccionado no tiene los permisos (rol) de instructor.",
+      });
+    }
+
+    if (instructorUser.isActive === false) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "El instructor seleccionado se encuentra inactivo y no puede ser asignado.",
+      });
+    }
 
     const newClass = await Class.create({
       title,
@@ -110,46 +143,42 @@ export const updateClass = async (req, res) => {
     const { id } = req.params;
     const { title, description } = req.body;
 
-    // Comprobar que se envió información para modificar
     if (title === undefined && description === undefined) {
       return res.status(400).json({
         success: false,
-        error: "Debes proporcionar al menos un campo para actualizar."
+        error: "Debes proporcionar al menos un campo para actualizar.",
       });
     }
 
-    // Buscar la clase
     const gymClass = await Class.findById(id);
 
     if (!gymClass) {
       return res.status(404).json({
         success: false,
-        error: "Clase no encontrada."
+        error: "Clase no encontrada.",
       });
     }
 
-    // Validar y actualizar título
     if (title !== undefined) {
       const cleanTitle = title.trim();
 
       if (!cleanTitle) {
         return res.status(400).json({
           success: false,
-          error: "El nombre de la clase no puede estar vacío."
+          error: "El nombre de la clase no puede estar vacío.",
         });
       }
 
       gymClass.title = cleanTitle;
     }
 
-    // Validar y actualizar descripción
     if (description !== undefined) {
       const cleanDescription = description.trim();
 
       if (!cleanDescription) {
         return res.status(400).json({
           success: false,
-          error: "La descripción no puede estar vacía."
+          error: "La descripción no puede estar vacía.",
         });
       }
 
@@ -161,15 +190,14 @@ export const updateClass = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Clase actualizada correctamente.",
-      data: gymClass
+      data: gymClass,
     });
-
   } catch (error) {
     console.error("Error actualizando clase:", error);
 
     return res.status(500).json({
       success: false,
-      error: "Error del servidor al actualizar la clase."
+      error: "Error del servidor al actualizar la clase.",
     });
   }
 };
