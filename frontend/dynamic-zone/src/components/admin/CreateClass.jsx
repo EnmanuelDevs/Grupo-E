@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiRequest } from "../../services/api";
 import "./create-class.css";
+import Swal from "sweetalert2";
 
 function CreateClass({ onClassCreated }) {
   const [formData, setFormData] = useState({
@@ -11,9 +12,6 @@ function CreateClass({ onClassCreated }) {
     date: "",
     time: "",
   });
-
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const [instructors, setInstructors] = useState([]);
 
@@ -52,7 +50,14 @@ function CreateClass({ onClassCreated }) {
         }
       } catch (err) {
         console.error("Error cargando instructores:", err);
-        setError("Hubo un problema al cargar la lista de instructores.");
+        Swal.fire({
+          title: "Error de conexión",
+          text: "Hubo un problema al cargar la lista de instructores.",
+          icon: "warning",
+          confirmButtonColor: "#e11d48",
+          background: "#f8f9fa",
+          color: "#333",
+        });
       }
     };
 
@@ -71,23 +76,38 @@ function CreateClass({ onClassCreated }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setMessage("");
-    setError("");
-
     const capacity = Number(formData.capacity);
 
     if (!Number.isInteger(capacity) || capacity <= 0) {
-      setError("La capacidad debe ser un número entero mayor que cero.");
+      Swal.fire({
+        title: "Dato inválido",
+        text: "La capacidad debe ser un número entero mayor que cero.",
+        icon: "error",
+        confirmButtonColor: "#e11d48",
+        background: "#f8f9fa",
+      });
       return;
     }
 
     if (!formData.date || !formData.time) {
-      setError("La fecha y la hora son obligatorias para crear la clase.");
+      Swal.fire({
+        title: "Campos incompletos",
+        text: "La fecha y la hora son obligatorias para crear la clase.",
+        icon: "warning",
+        confirmButtonColor: "#e11d48",
+        background: "#f8f9fa",
+      });
       return;
     }
 
     if (!formData.instructor) {
-      setError("Debes seleccionar un instructor para la clase.");
+      Swal.fire({
+        title: "Falta Instructor",
+        text: "Debes seleccionar un instructor para la clase.",
+        icon: "warning",
+        confirmButtonColor: "#e11d48",
+        background: "#f8f9fa",
+      });
       return;
     }
 
@@ -118,7 +138,15 @@ function CreateClass({ onClassCreated }) {
         });
       }
 
-      setMessage("Clase y horario creados correctamente.");
+      Swal.fire({
+        title: "¡Clase Creada!",
+        text: "La clase y su horario se han registrado exitosamente.",
+        icon: "success",
+        confirmButtonText: "Excelente",
+        confirmButtonColor: "#10b981",
+        background: "#f8f9fa",
+        color: "#333",
+      });
 
       if (onClassCreated) {
         onClassCreated();
@@ -134,18 +162,20 @@ function CreateClass({ onClassCreated }) {
       });
     } catch (error) {
       console.error("Error creando la clase o el horario:", error);
-      setError(
-        error.message || "No se pudo crear la clase o asignar su horario.",
-      );
+      Swal.fire({
+        title: "Error al crear la clase",
+        text:
+          error.message || "No se pudo crear la clase o asignar su horario.",
+        icon: "error",
+        confirmButtonColor: "#e11d48",
+        background: "#f8f9fa",
+      });
     }
   };
 
   return (
     <section className="create-class">
       <h2>Crear nueva clase</h2>
-
-      {message && <p className="create-class-message">{message}</p>}
-      {error && <p className="create-class-error">{error}</p>}
 
       <form onSubmit={handleSubmit}>
         <label>
