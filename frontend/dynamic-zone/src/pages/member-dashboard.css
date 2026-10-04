@@ -26,14 +26,12 @@
 
 
 .dashboard-sidebar {
-  width: 260px;
-  background-color: var(--bg-dark-panel);
+  width: 250px;
+  background: linear-gradient(180deg, #4a4a4a 0%, #3d2b2b 100%);
   color: white;
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-brand h2 {
@@ -184,10 +182,13 @@
 }
 
 .dashboard-card {
-  background-color: var(--bg-card);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #ffffff 60%, #fdf0f0 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  border: 1px solid #fce8e8;
 }
 
 .card-header {
@@ -317,19 +318,20 @@
 
 
 .btn-primary {
-  background-color: var(--brand-green);
+  background: linear-gradient(90deg, #20b2aa 0%, #2e8b57 100%);
   color: white;
   border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(46, 139, 87, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #059669;
+  background: linear-gradient(90deg, #3cb371 0%, #20b2aa 100%);
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
@@ -353,18 +355,18 @@
 }
 
 .btn-logout {
-  background-color: var(--brand-red);
+  background: linear-gradient(90deg, #cc0000 0%, #990000 100%);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .btn-logout:hover {
-  background-color: #7f1d1d;
+  background: linear-gradient(90deg, #ff3333 0%, #cc0000 100%);
 }
 
 
