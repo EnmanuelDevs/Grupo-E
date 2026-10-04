@@ -201,3 +201,59 @@ export const updateClass = async (req, res) => {
     });
   }
 };
+
+export const reserveClass = async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const userId = req.usuario._id || req.usuario.id;
+
+    const gymClass = await Class.findById(classId);
+
+    if (!gymClass) {
+      return res.status(404).json({
+        success: false,
+        error: "La clase seleccionada no existe.",
+      });
+    }
+
+    if (gymClass.participants && gymClass.participants.includes(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: "Ya tienes una reserva activa para esta clase.",
+      });
+    }
+
+    if (gymClass.availableSpots <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Lo sentimos, ya no hay cupos disponibles para esta clase.",
+      });
+    }
+
+    await Class.updateOne(
+      { _id: classId },
+      {
+        $push: { participants: userId },
+        $inc: { availableSpots: -1 },
+      },
+    );
+
+    if (!gymClass.participants) {
+      gymClass.participants = [];
+    }
+    gymClass.participants.push(userId);
+    gymClass.availableSpots -= 1;
+
+    return res.status(200).json({
+      success: true,
+      message: "Reserva confirmada exitosamente.",
+      data: gymClass,
+    });
+  } catch (error) {
+    console.error("Error al reservar la clase:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Ocurrió un error al procesar tu reserva.",
+    });
+  }
+};

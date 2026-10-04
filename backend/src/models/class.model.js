@@ -29,7 +29,15 @@ const classSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+
+    participants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
+
   { timestamps: true },
 );
 

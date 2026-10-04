@@ -5,6 +5,7 @@ import {
   createClass,
   updateClass,
   updateCapacity,
+  reserveClass,
 } from "../controllers/class.controller.js";
 
 import { asignarHorario } from "../controllers/schedule.controller.js";
@@ -14,30 +15,24 @@ import {
   verificarAdmin,
 } from "../middlewares/auth.middleware.js";
 
+import { verificarRol } from "../middlewares/role.middleware.js";
+
 const router = express.Router();
 
 router.get("/", verificarToken, getClasses);
 
 router.post("/", verificarToken, verificarAdmin, createClass);
 
-router.post(
-  "/:id/schedule",
-  verificarToken,
-  verificarAdmin,
-  asignarHorario
-);
-router.patch(
-  "/:id",
-  verificarToken,
-  verificarAdmin,
-  updateClass
-);
+router.post("/:id/schedule", verificarToken, verificarAdmin, asignarHorario);
+router.patch("/:id", verificarToken, verificarAdmin, updateClass);
 
-router.patch(
-  "/:id/capacity",
+router.patch("/:id/capacity", verificarToken, verificarAdmin, updateCapacity);
+
+router.post(
+  "/:id/reserve",
   verificarToken,
-  verificarAdmin,
-  updateCapacity
+  verificarRol(["member"]),
+  reserveClass,
 );
 
 export default router;

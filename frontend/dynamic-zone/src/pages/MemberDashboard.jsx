@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./member-dashboard.css";
+import Swal from "sweetalert2";
 
 const MemberDashboard = () => {
   const [user, setUser] = useState(null);
@@ -60,121 +61,264 @@ const MemberDashboard = () => {
     navigate("/login");
   };
 
+  const userId = user?.id || user?._id;
+
+  const myReservations = classes.filter(
+    (cls) => cls.participants && cls.participants.includes(userId),
+  );
+
+  const handleReserve = async (classId) => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/classes/${classId}/reserve`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: "¡Reserva Confirmada!",
+          text: "Tu lugar en la clase ha sido asegurado con éxito.",
+          icon: "success",
+          confirmButtonText: "Genial",
+          confirmButtonColor: "#10b981",
+          background: "#f8f9fa",
+          color: "#333",
+        });
+
+        setClasses((prevClasses) =>
+          prevClasses.map((cls) => {
+            const currentId = cls.id || cls._id;
+            if (currentId === classId) {
+              return {
+                ...cls,
+                availableSpots: cls.availableSpots - 1,
+                participants: [...(cls.participants || []), userId],
+              };
+            }
+            return cls;
+          }),
+        );
+      } else {
+        Swal.fire({
+          title: "No se pudo reservar",
+          text: data.error,
+          icon: "warning",
+          confirmButtonText: "Entendido",
+          confirmButtonColor: "#e11d48",
+          background: "#f8f9fa",
+          color: "#333",
+        });
+      }
+    } catch (error) {
+      console.error("Error realizando la reserva:", error);
+
+      Swal.fire({
+        title: "Error de conexión",
+        text: "Hubo un problema de conexión al intentar reservar. Inténtalo más tarde.",
+        icon: "error",
+        confirmButtonText: "Cerrar",
+        confirmButtonColor: "#333",
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: "50px",
-          fontSize: "18px",
-          color: "#6b7280",
-        }}
-      >
-        Cargando panel de miembro...
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Cargando tu panel...</p>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <div className="dashboard-title">
-          <h1>Panel de Miembro</h1>
-
-          <p className="member-welcome">
-            Bienvenido,{" "}
-            <strong>
-              {user?.name} {user?.lastName}
-            </strong>
-          </p>
+    <div className="dashboard-layout">
+      <aside className="dashboard-sidebar">
+        <div className="sidebar-brand">
+          <h2>Mi Gimnasio</h2>
         </div>
+        <nav className="sidebar-nav">
+          <button className="nav-item active">Inicio</button>
+          <button className="nav-item">Mis Reservas</button>
+          <button className="nav-item">Explorar Clases</button>
+          <button className="nav-item">Mi Perfil</button>
+        </nav>
+      </aside>
 
-        <button onClick={handleLogout} className="logout-btn">
-          Cerrar Sesión
-        </button>
-      </header>
-
-      <main className="dashboard-grid">
-        <section className="dashboard-card">
-          <h2>Clases y Cupos Disponibles</h2>
-          {classes.length === 0 ? (
-            <p className="empty-text">
-              No hay clases programadas por el momento.
+      <div className="dashboard-main">
+        <header className="dashboard-topbar">
+          <div className="welcome-message">
+            <h1>
+              Hola, {user?.name} {user?.lastName}
+            </h1>
+            <p className="text-muted">
+              Aquí tienes el resumen de tu actividad.
             </p>
-          ) : (
-            <ul className="classes-list">
-              {classes.map((cls) => (
-                <li key={cls.id || cls._id} className="class-item">
-                  <div className="class-info">
-                    <h3>{cls.title}</h3>
-                    <p>{cls.description}</p>
-                    <p style={{ fontSize: "12px", color: "#4b5563" }}>
-                      Instructor: {cls.instructor}
+          </div>
+          <div className="user-controls">
+            <div className="user-avatar">
+              {user?.name?.charAt(0)}
+              {user?.lastName?.charAt(0)}
+            </div>
+            <button onClick={handleLogout} className="btn-logout">
+              Cerrar Sesión
+            </button>
+          </div>
+        </header>
+
+        <div className="dashboard-content">
+          <section className="metrics-row">
+            <div className="metric-card">
+              <span className="metric-title">Estado de Membresía</span>
+              <span className="metric-badge success">Activa</span>
+            </div>
+            <div className="metric-card">
+              <span className="metric-title">Clases Reservadas</span>
+              <span className="metric-value">{myReservations.length}</span>
+            </div>
+            <div className="metric-card">
+              <span className="metric-title">Clases Disponibles</span>
+              <span className="metric-value">{classes.length} opciones</span>
+            </div>
+          </section>
+
+          <section className="dashboard-grid">
+            <div className="dashboard-card classes-card">
+              <div className="card-header">
+                <h2>Explorar Clases</h2>
+              </div>
+
+              <div className="card-body">
+                {classes.length === 0 ? (
+                  <p className="empty-text">
+                    No hay clases programadas por el momento.
+                  </p>
+                ) : (
+                  <ul className="classes-list">
+                    {classes.map((cls) => {
+                      const isReserved =
+                        cls.participants && cls.participants.includes(userId);
+
+                      return (
+                        <li key={cls.id || cls._id} className="class-item">
+                          <div className="class-info">
+                            <div className="class-header">
+                              <h3>{cls.title}</h3>
+                              <span className="spots-badge">
+                                {cls.availableSpots} / {cls.capacity} cupos
+                              </span>
+                            </div>
+
+                            <p className="class-description">
+                              {cls.description}
+                            </p>
+                            <p className="class-instructor">
+                              <strong>Instructor:</strong>{" "}
+                              {cls.instructor?.name
+                                ? `${cls.instructor.name} ${cls.instructor.lastName}`
+                                : cls.instructor}
+                            </p>
+
+                            {cls.schedules && cls.schedules.length > 0 ? (
+                              <div className="class-schedules">
+                                <strong>Horarios:</strong>
+                                <ul>
+                                  {cls.schedules.map((schedule, index) => (
+                                    <li key={index}>
+                                      <span className="schedule-date">
+                                        {schedule.date}
+                                      </span>
+                                      <span className="schedule-time">
+                                        {schedule.time}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : (
+                              <p className="no-schedules">
+                                Aún no hay horarios asignados.
+                              </p>
+                            )}
+                          </div>
+                          <div className="class-actions">
+                            <button
+                              className={
+                                isReserved ? "btn-secondary" : "btn-primary"
+                              }
+                              disabled={cls.availableSpots <= 0 || isReserved}
+                              onClick={() => handleReserve(cls.id || cls._id)}
+                            >
+                              {isReserved
+                                ? "Ya reservada"
+                                : cls.availableSpots > 0
+                                  ? "Reservar Clase"
+                                  : "Agotado"}
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            <div className="dashboard-card reservations-card">
+              <div className="card-header">
+                <h2>Mis Reservas</h2>
+              </div>
+              <div className="card-body">
+                {myReservations.length === 0 ? (
+                  <div className="center-content">
+                    <p className="empty-text">
+                      Aún no tienes reservas activas.
                     </p>
-
-                    {cls.schedules && cls.schedules.length > 0 ? (
-                      <div
-                        className="class-schedules"
-                        style={{
-                          marginTop: "10px",
-                          marginBottom: "10px",
-                          fontSize: "14px",
-                          color: "#374151",
-                        }}
-                      >
-                        <strong>Horarios:</strong>
-                        <ul
-                          style={{
-                            listStyleType: "none",
-                            padding: 0,
-                            marginTop: "5px",
-                          }}
-                        >
-                          {cls.schedules.map((schedule, index) => (
-                            <li key={index} style={{ marginBottom: "4px" }}>
-                              📅 {schedule.date} a las ⏰ {schedule.time}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : (
-                      <p
-                        style={{
-                          fontSize: "13px",
-                          color: "#9ca3af",
-                          fontStyle: "italic",
-                          marginTop: "10px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        Aún no hay horarios asignados.
-                      </p>
-                    )}
-
-                    <span className="spots-badge">
-                      Cupos disponibles: <b>{cls.availableSpots}</b> /{" "}
-                      {cls.capacity}
-                    </span>
+                    <button className="btn-secondary">Explorar clases</button>
                   </div>
-                  <button
-                    className="reserve-btn"
-                    disabled={cls.availableSpots <= 0}
-                  >
-                    {cls.availableSpots > 0 ? "Reservar" : "Agotado"}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="dashboard-card">
-          <h2>Mis Reservas</h2>
-          <p className="empty-text">
-            Aquí podrás ver y cancelar las clases que hayas reservado.
-          </p>
-        </section>
-      </main>
+                ) : (
+                  <ul className="classes-list">
+                    {myReservations.map((res) => (
+                      <li
+                        key={`my-res-${res.id || res._id}`}
+                        className="class-item"
+                      >
+                        <div className="class-info">
+                          <div className="class-header">
+                            <h3>{res.title}</h3>
+                            <span className="metric-badge success">
+                              Confirmada
+                            </span>
+                          </div>
+                          <p
+                            className="class-instructor"
+                            style={{ marginTop: "10px" }}
+                          >
+                            <strong>Instructor:</strong>{" "}
+                            {res.instructor?.name
+                              ? `${res.instructor.name} ${res.instructor.lastName}`
+                              : res.instructor}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   );
 };
