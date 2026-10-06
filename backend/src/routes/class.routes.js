@@ -6,6 +6,7 @@ import {
   updateClass,
   updateCapacity,
   reserveClass,
+  cancelReservation,
 } from "../controllers/class.controller.js";
 
 import { asignarHorario } from "../controllers/schedule.controller.js";
@@ -33,6 +34,11 @@ router.post(
   verificarToken,
   verificarRol(["member"]),
   reserveClass,
+);
+
+router.delete("/:id/reserve", 
+  verificarToken, verificarRol(["member"]), 
+  cancelReservation,
 );
 
 export default router;

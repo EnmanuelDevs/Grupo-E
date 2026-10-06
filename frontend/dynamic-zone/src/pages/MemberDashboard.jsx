@@ -93,6 +93,12 @@ const MemberDashboard = () => {
           confirmButtonColor: "#10b981",
           background: "#f8f9fa",
           color: "#333",
+
+          customClass: {
+            popup: "gym-swal-popup",
+            confirmButton: "gym-swal-confirm",
+            cancelButton: "gym-swal-cancel"
+          }
         });
 
         setClasses((prevClasses) =>
@@ -117,6 +123,12 @@ const MemberDashboard = () => {
           confirmButtonColor: "#e11d48",
           background: "#f8f9fa",
           color: "#333",
+
+          customClass: {
+            popup: "gym-swal-popup",
+            confirmButton: "gym-swal-confirm",
+            cancelButton: "gym-swal-cancel"
+          }
         });
       }
     } catch (error) {
@@ -125,6 +137,113 @@ const MemberDashboard = () => {
       Swal.fire({
         title: "Error de conexión",
         text: "Hubo un problema de conexión al intentar reservar. Inténtalo más tarde.",
+        icon: "error",
+        confirmButtonText: "Cerrar",
+        confirmButtonColor: "#333",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
+      });
+    }
+  };
+
+  const handleCancelReservation = async (classId) => {
+    console.log("CLICK EN CANCELAR", classId);
+
+    const result = await Swal.fire({
+      title: "¿Cancelar reserva?",
+      text: "¿Estás seguro de que deseas cancelar esta reserva?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, cancelar",
+      cancelButtonText: "No, mantener",
+      reverseButtons: true,
+      confirmButtonColor: "#e11d48",
+      cancelButtonColor: "#6b7280",
+      background: "#f8f9fa",
+      color: "#333",
+
+
+      customClass: {
+        popup: "gym-swal-popup",
+        confirmButton: "gym-swal-confirm",
+        cancelButton: "gym-swal-cancel"
+      }
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/classes/${classId}/reserve`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: "Reserva cancelada",
+          text: "Tu reserva se canceló correctamente.",
+          icon: "success",
+          confirmButtonText: "Aceptar",
+          confirmButtonColor: "#10b981",
+          background: "#f8f9fa",
+          color: "#333",
+
+          customClass: {
+            popup: "gym-swal-popup",
+            confirmButton: "gym-swal-confirm",
+            cancelButton: "gym-swal-cancel"
+          }
+        });
+
+        setClasses((prevClasses) =>
+          prevClasses.map((cls) => {
+            const currentId = cls.id || cls._id;
+
+            if (currentId === classId) {
+              return {
+                ...cls,
+                availableSpots: cls.availableSpots + 1,
+                participants: (cls.participants || []).filter(
+                  (participantId) => participantId !== userId,
+                ),
+              };
+            }
+
+            return cls;
+          }),
+        );
+      } else {
+        Swal.fire({
+          title: "No se pudo cancelar",
+          text: data.error,
+          icon: "warning",
+          confirmButtonText: "Entendido",
+          confirmButtonColor: "#e11d48",
+          background: "#f8f9fa",
+          color: "#333",
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelando la reserva:", error);
+
+      Swal.fire({
+        title: "Error de conexión",
+        text: "Hubo un problema de conexión al intentar cancelar la reserva.",
         icon: "error",
         confirmButtonText: "Cerrar",
         confirmButtonColor: "#333",
@@ -143,18 +262,6 @@ const MemberDashboard = () => {
 
   return (
     <div className="dashboard-layout">
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-brand">
-          <h2>Mi Gimnasio</h2>
-        </div>
-        <nav className="sidebar-nav">
-          <button className="nav-item active">Inicio</button>
-          <button className="nav-item">Mis Reservas</button>
-          <button className="nav-item">Explorar Clases</button>
-          <button className="nav-item">Mi Perfil</button>
-        </nav>
-      </aside>
-
       <div className="dashboard-main">
         <header className="dashboard-topbar">
           <div className="welcome-message">
@@ -302,7 +409,6 @@ const MemberDashboard = () => {
                           </div>
                           <p
                             className="class-instructor"
-                            style={{ marginTop: "10px" }}
                           >
                             <strong>Instructor:</strong>{" "}
                             {res.instructor?.name
@@ -310,6 +416,14 @@ const MemberDashboard = () => {
                               : res.instructor}
                           </p>
                         </div>
+                          <button
+                            className="btn-cancel-reservation"
+                            onClick={() =>
+                              handleCancelReservation(res.id || res._id)
+                            }
+                          >
+                            Cancelar reserva
+                          </button>
                       </li>
                     ))}
                   </ul>
@@ -321,6 +435,8 @@ const MemberDashboard = () => {
       </div>
     </div>
   );
+
+
 };
 
 export default MemberDashboard;

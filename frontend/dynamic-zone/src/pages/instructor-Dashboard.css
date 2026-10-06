@@ -1,267 +1,200 @@
-.instructor-dashboard {
-  position: relative;
-  min-height: 100vh;
-  background:
-    radial-gradient(
-      circle at 85% 10%,
-      rgba(158, 0, 0, 0.08),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 10% 90%,
-      rgba(158, 0, 0, 0.05),
-      transparent 25%
-    ),
-    #f7f6f3;
-
-  color: #242424;
-  padding: 44px clamp(20px, 4vw, 64px);
-  overflow: hidden;
+:root {
+  --bg-app: #fcfafb;
+  --bg-dark-panel: #4a4a4a;
+  --text-main: #333333;
+  --text-muted: #6b7280;
+  --brand-red: #a31a1a;
+  --brand-green: #10b981;
+  --brand-red-light: #ffe4e6;
+  --brand-red-dark: #9f1239;
+  --bg-card: #ffffff;
+  --border-radius: 12px;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
+.instructor-dashboard {
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-main);
+}
+
+
 .instructor-header {
-  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 32px;
-  padding: 30px 34px;
-
-  background: rgba(33, 27, 28, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 16px;
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-
-  box-shadow:
-    0 12px 35px rgba(0, 0, 0, 0.12),
-    0 0 35px rgba(158, 0, 0, 0.08);
-
-  overflow: hidden;
-}
-
-.instructor-header::before {
-  content: "";
-  position: absolute;
-  width: 280px;
-  height: 280px;
-  top: -160px;
-  right: -70px;
-
-  background: rgba(158, 0, 0, 0.28);
-  border-radius: 50%;
-  filter: blur(60px);
-
-  pointer-events: none;
-}
-
-.instructor-header::after {
-  content: "";
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  bottom: -120px;
-  left: 25%;
-
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 50%;
-  filter: blur(45px);
-
-  pointer-events: none;
+  padding: 24px 40px;
+  background-color: transparent;
 }
 
 .instructor-header h1 {
-  position: relative;
-  z-index: 2;
-  margin: 0 0 8px;
-  color: #ffffff;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin: 0 0 5px 0;
 }
 
 .instructor-header p {
-  position: relative;
-  z-index: 2;
   margin: 0;
-  color: #c9c2c2;
-  font-size: 16px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
-.instructor-header p strong {
-  color: #ffffff;
+.instructor-header strong {
+  color: var(--text-main);
 }
+
 
 .instructor-logout-btn {
-    border: none;
-    background: #9e0000;
-    color: #fff;
-    padding: 11px 18px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
+  background: linear-gradient(90deg, #cc0000 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .instructor-logout-btn:hover {
-    background: #7f0000;
-    transform: translateY(-1px);
-}
-
-.instructor-logout-btn:active {
-    transform: translateY(0);
+  background: linear-gradient(90deg, #ff3333 0%, #cc0000 100%);
 }
 
 
 .instructor-main {
+  padding: 0 40px 40px 40px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
 
+
 .instructor-card {
-  position: relative;
-  background:
-    linear-gradient(145deg, #ffffff 0%, #f8f5f3 100%);
-  border: 1px solid rgba(158, 0, 0, 0.12);
-  border-radius: 16px;
-  padding: 30px;
+  background: linear-gradient(135deg, #ffffff 60%, #fdf0f0 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #fce8e8;
   overflow: hidden;
-  box-shadow:
-    0 10px 30px rgba(36, 36, 36, 0.07),
-    0 0 35px rgba(158, 0, 0, 0.05);
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
-}
-
-.instructor-card::before {
-  content: "";
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  top: -90px;
-  right: -60px;
-  background: rgba(158, 0, 0, 0.12);
-  border-radius: 50%;
-  filter: blur(45px);
-  pointer-events: none;
-}
-
-.instructor-card::after {
-  content: "";
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  bottom: -70px;
-  left: -40px;
-  background: rgba(158, 0, 0, 0.08);
-  border-radius: 50%;
-  filter: blur(35px);
-  pointer-events: none;
-}
-
-.instructor-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(158, 0, 0, 0.25);
-  box-shadow:
-    0 16px 40px rgba(36, 36, 36, 0.10),
-    0 0 35px rgba(158, 0, 0, 0.10);
+  padding: 24px;
 }
 
 .instructor-card h2 {
-  position: relative;
-  z-index: 1;
-  margin: 0 0 24px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #e7e2df;
-  font-size: 21px;
-  font-weight: 700;
-  color: #242424;
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  color: var(--text-main);
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 
+.instructor-classes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .instructor-class-item {
-  position: relative;
-  padding: 20px;
-  border: 1px solid #e7e2df;
+  padding: 22px;
+  border: 1px solid #f1e5e5;
   border-radius: 12px;
-  background: #faf9f7;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  background: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .instructor-class-item:hover {
-  background: #ffffff;
-  border-color: #c9b9b9;
-  transform: translateX(3px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(163, 26, 26, 0.08);
+  border-color: #f0caca;
 }
 
 .instructor-class-item h3 {
-  margin: 0 0 10px;
-  color: #242424;
-  font-size: 18px;
+  margin: 0 0 10px 0;
+  font-size: 1.3rem;
   font-weight: 700;
+  color: var(--brand-red);
 }
 
 .instructor-class-item p {
-  margin: 7px 0;
-  color: #6d6567;
-  font-size: 14px;
-  line-height: 1.5;
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
-.instructor-class-item strong {
-  color: #242424;
+.instructor-class-item p:last-child {
+  margin: 16px 0 0;
+  padding: 12px 16px;
+  background: rgba(253, 242, 242, 0.65);
+  border: 1px solid rgba(163, 26, 26, 0.12);
+  border-radius: 12px;
+  color: var(--brand-red);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 4px 12px rgba(163, 26, 26, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
+
+.instructor-class-item:hover p:last-child {
+  background: rgba(253, 242, 242, 0.9);
+  border-color: rgba(163, 26, 26, 0.2);
+  box-shadow:
+    0 6px 16px rgba(163, 26, 26, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
 
 
 .instructor-empty {
-    margin: 0;
-    color: #6d6567;
-    font-size: 15px;
-    line-height: 1.6;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
 }
+
+
+
 
 .instructor-loading {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f7f6f3;
-    color: #6d6567;
-    font-size: 18px;
-    font-weight: 600;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 
 
-@media (max-width: 760px) {
-    .instructor-dashboard {
-        padding: 28px 18px;
-    }
+@media (max-width: 768px) {
+  .instructor-header {
+    padding: 20px;
+    gap: 20px;
+  }
 
-    .instructor-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  .instructor-header h1 {
+    font-size: 1.5rem;
+  }
 
-    .instructor-header h1 {
-        font-size: 26px;
-    }
+  .instructor-main {
+    padding: 0 20px 20px 20px;
+  }
 
-    .instructor-logout-btn {
-        width: 100%;
-    }
+  .instructor-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-    .instructor-main {
-        grid-template-columns: 1fr;
-    }
+  .instructor-logout-btn {
+    align-self: flex-end;
+  }
 
-    .instructor-card {
-        padding: 22px;
-    }
+  .instructor-card {
+    padding: 20px;
+  }
 }

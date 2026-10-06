@@ -257,3 +257,50 @@ export const reserveClass = async (req, res) => {
     });
   }
 };
+
+
+
+export const cancelReservation = async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const userId = req.usuario._id || req.usuario.id;
+
+    const gymClass = await Class.findById(classId);
+
+    if (!gymClass) {
+      return res.status(404).json({
+        success:false,
+        error: "La reserva o clase solicitada no existe.",
+      });
+    }
+
+    if (!gymClass.participants || !gymClass.participants.includes(userId)) {
+      return res.status(404).json({
+        success: false,
+        error: "No tienes una reserva activa para esta clase.",
+      });
+    }
+
+    await Class.updateOne(
+      { _id: classId },
+      {
+        $pull: { participants: userId },
+        $inc: { availableSpots: 1 },
+      },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Reserva cancelada correctamente.",
+      data: null ,
+    });
+
+  } catch (error) {
+    console.log("Error al cancelar la reserva:", error);
+
+    return res.status(500).json({
+      success: false, 
+      error: "Ocurrió un error al cancelar la reserva.",
+    });
+  }
+};

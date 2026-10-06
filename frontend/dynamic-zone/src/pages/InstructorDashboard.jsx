@@ -160,7 +160,7 @@ const InstructorDashboard = () => {
                                     <p>{cls.description}</p>
 
                                     <p>
-                                        <strong>Instructor:</strong>{" "}
+                                        <strong>Cupos disponibles:</strong>{" "}
                                         {cls.availableSpots} / {cls.capacity}
                                     </p>
 
