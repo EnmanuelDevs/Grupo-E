@@ -939,3 +939,50 @@
     padding: 0 20px 20px;
   }
 }
+
+.btn-admin-delete {
+  background-color: #fef2f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-admin-delete:hover {
+  background-color: #e11d48;
+  color: #ffffff;
+  border-color: #e11d48;
+}
+
+.btn-admin-delete:active {
+  background-color: #be123c;
+  transform: scale(0.98);
+}
+
+
+.btn-admin-add {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-admin-add:hover {
+  background-color: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.btn-admin-add:active {
+  background-color: #15803d;
+  transform: scale(0.98);
+}

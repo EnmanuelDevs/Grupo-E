@@ -63,16 +63,30 @@ const MemberDashboard = () => {
 
   const userId = user?.id || user?._id;
 
-  const myReservations = classes.filter(
-    (cls) => cls.participants && cls.participants.includes(userId),
-  );
+  const myReservations = [];
+  classes.forEach((cls) => {
+    if (cls.schedules) {
+      cls.schedules.forEach((sch) => {
+        if (sch.participants && sch.participants.includes(userId)) {
+          myReservations.push({
+            classId: cls.id || cls._id,
+            title: cls.title,
+            instructor: cls.instructor,
+            scheduleId: sch._id,
+            date: sch.date,
+            time: sch.time,
+          });
+        }
+      });
+    }
+  });
 
-  const handleReserve = async (classId) => {
+  const handleReserve = async (scheduleId, classId) => {
     const token = localStorage.getItem("token");
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/classes/${classId}/reserve`,
+        `http://localhost:3000/api/classes/${scheduleId}/reserve`,
         {
           method: "POST",
           headers: {
@@ -87,28 +101,34 @@ const MemberDashboard = () => {
       if (data.success) {
         Swal.fire({
           title: "¡Reserva Confirmada!",
-          text: "Tu lugar en la clase ha sido asegurado con éxito.",
+          text: "Tu lugar en el horario seleccionado ha sido asegurado con éxito.",
           icon: "success",
           confirmButtonText: "Genial",
           confirmButtonColor: "#10b981",
           background: "#f8f9fa",
           color: "#333",
-
           customClass: {
             popup: "gym-swal-popup",
             confirmButton: "gym-swal-confirm",
-            cancelButton: "gym-swal-cancel"
-          }
+            cancelButton: "gym-swal-cancel",
+          },
         });
 
         setClasses((prevClasses) =>
           prevClasses.map((cls) => {
-            const currentId = cls.id || cls._id;
-            if (currentId === classId) {
+            if ((cls.id || cls._id) === classId) {
               return {
                 ...cls,
-                availableSpots: cls.availableSpots - 1,
-                participants: [...(cls.participants || []), userId],
+                schedules: cls.schedules.map((sch) => {
+                  if (sch._id === scheduleId) {
+                    return {
+                      ...sch,
+                      availableSpots: sch.availableSpots - 1,
+                      participants: [...(sch.participants || []), userId],
+                    };
+                  }
+                  return sch;
+                }),
               };
             }
             return cls;
@@ -123,12 +143,11 @@ const MemberDashboard = () => {
           confirmButtonColor: "#e11d48",
           background: "#f8f9fa",
           color: "#333",
-
           customClass: {
             popup: "gym-swal-popup",
             confirmButton: "gym-swal-confirm",
-            cancelButton: "gym-swal-cancel"
-          }
+            cancelButton: "gym-swal-cancel",
+          },
         });
       }
     } catch (error) {
@@ -140,22 +159,19 @@ const MemberDashboard = () => {
         icon: "error",
         confirmButtonText: "Cerrar",
         confirmButtonColor: "#333",
-
         customClass: {
           popup: "gym-swal-popup",
           confirmButton: "gym-swal-confirm",
-          cancelButton: "gym-swal-cancel"
-        }
+          cancelButton: "gym-swal-cancel",
+        },
       });
     }
   };
 
-  const handleCancelReservation = async (classId) => {
-    console.log("CLICK EN CANCELAR", classId);
-
+  const handleCancelReservation = async (scheduleId, classId) => {
     const result = await Swal.fire({
       title: "¿Cancelar reserva?",
-      text: "¿Estás seguro de que deseas cancelar esta reserva?",
+      text: "¿Estás seguro de que deseas cancelar este horario?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Sí, cancelar",
@@ -165,13 +181,11 @@ const MemberDashboard = () => {
       cancelButtonColor: "#6b7280",
       background: "#f8f9fa",
       color: "#333",
-
-
       customClass: {
         popup: "gym-swal-popup",
         confirmButton: "gym-swal-confirm",
-        cancelButton: "gym-swal-cancel"
-      }
+        cancelButton: "gym-swal-cancel",
+      },
     });
 
     if (!result.isConfirmed) {
@@ -182,7 +196,7 @@ const MemberDashboard = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/classes/${classId}/reserve`,
+        `http://localhost:3000/api/classes/${scheduleId}/reserve`,
         {
           method: "DELETE",
           headers: {
@@ -202,28 +216,32 @@ const MemberDashboard = () => {
           confirmButtonColor: "#10b981",
           background: "#f8f9fa",
           color: "#333",
-
           customClass: {
             popup: "gym-swal-popup",
             confirmButton: "gym-swal-confirm",
-            cancelButton: "gym-swal-cancel"
-          }
+            cancelButton: "gym-swal-cancel",
+          },
         });
 
         setClasses((prevClasses) =>
           prevClasses.map((cls) => {
-            const currentId = cls.id || cls._id;
-
-            if (currentId === classId) {
+            if ((cls.id || cls._id) === classId) {
               return {
                 ...cls,
-                availableSpots: cls.availableSpots + 1,
-                participants: (cls.participants || []).filter(
-                  (participantId) => participantId !== userId,
-                ),
+                schedules: cls.schedules.map((sch) => {
+                  if (sch._id === scheduleId) {
+                    return {
+                      ...sch,
+                      availableSpots: sch.availableSpots + 1,
+                      participants: (sch.participants || []).filter(
+                        (pId) => pId !== userId,
+                      ),
+                    };
+                  }
+                  return sch;
+                }),
               };
             }
-
             return cls;
           }),
         );
@@ -290,7 +308,7 @@ const MemberDashboard = () => {
               <span className="metric-badge success">Activa</span>
             </div>
             <div className="metric-card">
-              <span className="metric-title">Clases Reservadas</span>
+              <span className="metric-title">Reservas Activas</span>
               <span className="metric-value">{myReservations.length}</span>
             </div>
             <div className="metric-card">
@@ -312,70 +330,122 @@ const MemberDashboard = () => {
                   </p>
                 ) : (
                   <ul className="classes-list">
-                    {classes.map((cls) => {
-                      const isReserved =
-                        cls.participants && cls.participants.includes(userId);
-
-                      return (
-                        <li key={cls.id || cls._id} className="class-item">
-                          <div className="class-info">
-                            <div className="class-header">
-                              <h3>{cls.title}</h3>
-                              <span className="spots-badge">
-                                {cls.availableSpots} / {cls.capacity} cupos
-                              </span>
-                            </div>
-
-                            <p className="class-description">
-                              {cls.description}
-                            </p>
-                            <p className="class-instructor">
-                              <strong>Instructor:</strong>{" "}
-                              {cls.instructor?.name
-                                ? `${cls.instructor.name} ${cls.instructor.lastName}`
-                                : cls.instructor}
-                            </p>
-
-                            {cls.schedules && cls.schedules.length > 0 ? (
-                              <div className="class-schedules">
-                                <strong>Horarios:</strong>
-                                <ul>
-                                  {cls.schedules.map((schedule, index) => (
-                                    <li key={index}>
-                                      <span className="schedule-date">
-                                        {schedule.date}
-                                      </span>
-                                      <span className="schedule-time">
-                                        {schedule.time}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ) : (
-                              <p className="no-schedules">
-                                Aún no hay horarios asignados.
-                              </p>
-                            )}
+                    {classes.map((cls) => (
+                      <li key={cls.id || cls._id} className="class-item">
+                        <div className="class-info">
+                          <div className="class-header">
+                            <h3>{cls.title}</h3>
                           </div>
-                          <div className="class-actions">
-                            <button
-                              className={
-                                isReserved ? "btn-secondary" : "btn-primary"
-                              }
-                              disabled={cls.availableSpots <= 0 || isReserved}
-                              onClick={() => handleReserve(cls.id || cls._id)}
+
+                          <p className="class-description">{cls.description}</p>
+                          <p className="class-instructor">
+                            <strong>Instructor:</strong>{" "}
+                            {cls.instructor?.name
+                              ? `${cls.instructor.name} ${cls.instructor.lastName}`
+                              : cls.instructor}
+                          </p>
+
+                          {cls.schedules && cls.schedules.length > 0 ? (
+                            <div
+                              className="class-schedules"
+                              style={{ marginTop: "15px" }}
                             >
-                              {isReserved
-                                ? "Ya reservada"
-                                : cls.availableSpots > 0
-                                  ? "Reservar Clase"
-                                  : "Agotado"}
-                            </button>
-                          </div>
-                        </li>
-                      );
-                    })}
+                              <strong>Horarios Disponibles:</strong>
+                              <ul
+                                style={{
+                                  listStyle: "none",
+                                  padding: 0,
+                                  marginTop: "10px",
+                                }}
+                              >
+                                {cls.schedules.map((schedule) => {
+                                  const isReserved =
+                                    schedule.participants &&
+                                    schedule.participants.includes(userId);
+
+                                  return (
+                                    <li
+                                      key={schedule._id}
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        background: "#f8f9fa",
+                                        padding: "10px",
+                                        borderRadius: "8px",
+                                        marginBottom: "8px",
+                                      }}
+                                    >
+                                      <div>
+                                        <span
+                                          className="schedule-date"
+                                          style={{
+                                            fontWeight: "500",
+                                            marginRight: "10px",
+                                          }}
+                                        >
+                                          {schedule.date}
+                                        </span>
+                                        <span
+                                          className="schedule-time"
+                                          style={{
+                                            color: "#4b5563",
+                                            marginRight: "15px",
+                                          }}
+                                        >
+                                          {schedule.time}
+                                        </span>
+                                        <span
+                                          className="spots-badge"
+                                          style={{ fontSize: "0.8rem" }}
+                                        >
+                                          {schedule.availableSpots} cupos
+                                        </span>
+                                      </div>
+
+                                      <button
+                                        style={{
+                                          padding: "6px 12px",
+                                          fontSize: "0.85rem",
+                                        }}
+                                        className={
+                                          isReserved
+                                            ? "btn-secondary"
+                                            : "btn-primary"
+                                        }
+                                        disabled={
+                                          schedule.availableSpots <= 0 ||
+                                          isReserved
+                                        }
+                                        onClick={() =>
+                                          handleReserve(
+                                            schedule._id,
+                                            cls.id || cls._id,
+                                          )
+                                        }
+                                      >
+                                        {isReserved
+                                          ? "Reservado"
+                                          : schedule.availableSpots > 0
+                                            ? "Reservar"
+                                            : "Agotado"}
+                                      </button>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          ) : (
+                            <p
+                              className="no-schedules"
+                              style={{ marginTop: "15px", color: "#6b7280" }}
+                            >
+                              Aún no hay horarios asignados.
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
                   </ul>
                 )}
               </div>
@@ -391,13 +461,12 @@ const MemberDashboard = () => {
                     <p className="empty-text">
                       Aún no tienes reservas activas.
                     </p>
-                    <button className="btn-secondary">Explorar clases</button>
                   </div>
                 ) : (
                   <ul className="classes-list">
                     {myReservations.map((res) => (
                       <li
-                        key={`my-res-${res.id || res._id}`}
+                        key={`my-res-${res.scheduleId}`}
                         className="class-item"
                       >
                         <div className="class-info">
@@ -407,8 +476,31 @@ const MemberDashboard = () => {
                               Confirmada
                             </span>
                           </div>
+
+                          <div
+                            style={{
+                              marginTop: "10px",
+                              background: "#f0fdf4",
+                              padding: "8px",
+                              borderRadius: "6px",
+                              border: "1px solid #dcfce7",
+                            }}
+                          >
+                            <p
+                              style={{
+                                margin: 0,
+                                color: "#166534",
+                                fontSize: "0.9rem",
+                                fontWeight: "500",
+                              }}
+                            >
+                              📅 {res.date} a las ⏰ {res.time}
+                            </p>
+                          </div>
+
                           <p
                             className="class-instructor"
+                            style={{ marginTop: "10px" }}
                           >
                             <strong>Instructor:</strong>{" "}
                             {res.instructor?.name
@@ -416,14 +508,19 @@ const MemberDashboard = () => {
                               : res.instructor}
                           </p>
                         </div>
+                        <div style={{ marginTop: "15px" }}>
                           <button
                             className="btn-cancel-reservation"
                             onClick={() =>
-                              handleCancelReservation(res.id || res._id)
+                              handleCancelReservation(
+                                res.scheduleId,
+                                res.classId,
+                              )
                             }
                           >
                             Cancelar reserva
                           </button>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -435,8 +532,6 @@ const MemberDashboard = () => {
       </div>
     </div>
   );
-
-
 };
 
 export default MemberDashboard;

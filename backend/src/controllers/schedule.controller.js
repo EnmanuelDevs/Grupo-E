@@ -25,6 +25,7 @@ export const asignarHorario = async (req, res) => {
       classId: id,
       date,
       time,
+      availableSpots: existeClase.capacity,
     });
 
     await nuevoHorario.save();

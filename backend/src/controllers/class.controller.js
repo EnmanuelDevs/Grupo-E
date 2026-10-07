@@ -11,7 +11,7 @@ export const getClasses = async (req, res) => {
     const classesWithSchedules = await Promise.all(
       classes.map(async (gymClass) => {
         const schedules = await Schedule.find({ classId: gymClass._id }).select(
-          "date time -_id",
+          "_id date time availableSpots participants",
         );
 
         const instructorFullName = gymClass.instructor
@@ -204,53 +204,53 @@ export const updateClass = async (req, res) => {
 
 export const reserveClass = async (req, res) => {
   try {
-    const classId = req.params.id;
+    const scheduleId = req.params.id;
     const userId = req.usuario._id || req.usuario.id;
 
-    const gymClass = await Class.findById(classId);
+    const schedule = await Schedule.findById(scheduleId);
 
-    if (!gymClass) {
+    if (!schedule) {
       return res.status(404).json({
         success: false,
-        error: "La clase seleccionada no existe.",
+        error: "El horario seleccionado no existe.",
       });
     }
 
-    if (gymClass.participants && gymClass.participants.includes(userId)) {
+    if (schedule.participants && schedule.participants.includes(userId)) {
       return res.status(400).json({
         success: false,
-        error: "Ya tienes una reserva activa para esta clase.",
+        error: "Ya tienes una reserva activa para este horario específico.",
       });
     }
 
-    if (gymClass.availableSpots <= 0) {
+    if (schedule.availableSpots <= 0) {
       return res.status(400).json({
         success: false,
-        error: "Lo sentimos, ya no hay cupos disponibles para esta clase.",
+        error: "Lo sentimos, ya no hay cupos disponibles para este horario.",
       });
     }
 
-    await Class.updateOne(
-      { _id: classId },
+    await Schedule.updateOne(
+      { _id: scheduleId },
       {
         $push: { participants: userId },
         $inc: { availableSpots: -1 },
       },
     );
 
-    if (!gymClass.participants) {
-      gymClass.participants = [];
+    if (!schedule.participants) {
+      schedule.participants = [];
     }
-    gymClass.participants.push(userId);
-    gymClass.availableSpots -= 1;
+    schedule.participants.push(userId);
+    schedule.availableSpots -= 1;
 
     return res.status(200).json({
       success: true,
       message: "Reserva confirmada exitosamente.",
-      data: gymClass,
+      data: schedule,
     });
   } catch (error) {
-    console.error("Error al reservar la clase:", error);
+    console.error("Error al reservar el horario:", error);
     return res.status(500).json({
       success: false,
       error: "Ocurrió un error al procesar tu reserva.",
@@ -258,31 +258,29 @@ export const reserveClass = async (req, res) => {
   }
 };
 
-
-
 export const cancelReservation = async (req, res) => {
   try {
-    const classId = req.params.id;
+    const scheduleId = req.params.id;
     const userId = req.usuario._id || req.usuario.id;
 
-    const gymClass = await Class.findById(classId);
+    const schedule = await Schedule.findById(scheduleId);
 
-    if (!gymClass) {
-      return res.status(404).json({
-        success:false,
-        error: "La reserva o clase solicitada no existe.",
-      });
-    }
-
-    if (!gymClass.participants || !gymClass.participants.includes(userId)) {
+    if (!schedule) {
       return res.status(404).json({
         success: false,
-        error: "No tienes una reserva activa para esta clase.",
+        error: "La reserva u horario solicitado no existe.",
       });
     }
 
-    await Class.updateOne(
-      { _id: classId },
+    if (!schedule.participants || !schedule.participants.includes(userId)) {
+      return res.status(404).json({
+        success: false,
+        error: "No tienes una reserva activa para este horario.",
+      });
+    }
+
+    await Schedule.updateOne(
+      { _id: scheduleId },
       {
         $pull: { participants: userId },
         $inc: { availableSpots: 1 },
@@ -292,15 +290,44 @@ export const cancelReservation = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Reserva cancelada correctamente.",
-      data: null ,
+      data: null,
     });
-
   } catch (error) {
     console.log("Error al cancelar la reserva:", error);
 
     return res.status(500).json({
-      success: false, 
+      success: false,
       error: "Ocurrió un error al cancelar la reserva.",
+    });
+  }
+};
+
+export const deleteClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const gymClass = await Class.findById(id);
+
+    if (!gymClass) {
+      return res.status(404).json({
+        success: false,
+        error: "La clase seleccionada no existe.",
+      });
+    }
+
+    await Schedule.deleteMany({ classId: id });
+
+    await Class.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Clase y sus horarios eliminados correctamente.",
+    });
+  } catch (error) {
+    console.error("Error al eliminar la clase:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Error del servidor al intentar eliminar la clase.",
     });
   }
 };

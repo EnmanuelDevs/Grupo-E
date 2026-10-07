@@ -15,6 +15,17 @@ const scheduleSchema = new mongoose.Schema(
       type: String,
       required: [true, "La hora es obligatoria"],
     },
+
+    availableSpots: {
+      type: Number,
+      default: 0,
+    },
+    participants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
