@@ -16,6 +16,11 @@ const scheduleSchema = new mongoose.Schema(
       required: [true, "La hora es obligatoria"],
     },
 
+    startsAt: {
+    type: Date,
+    index: true,
+},
+
     availableSpots: {
       type: Number,
       default: 0,

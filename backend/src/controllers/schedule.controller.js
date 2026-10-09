@@ -1,5 +1,6 @@
 import Schedule from "../models/schedule.model.js";
 import Class from "../models/class.model.js";
+import { DateTime } from "luxon";
 
 export const asignarHorario = async (req, res) => {
   try {
@@ -11,6 +12,16 @@ export const asignarHorario = async (req, res) => {
         success: false,
         error: "La fecha y la hora son obligatorias para asignar un horario.",
       });
+    }
+
+    const zone = process.env.GYM_TIMEZONE || "America/La_Paz";
+    const startsAt = DateTime.fromISO(`${date}T${time}`, { zone });
+
+    if (!startsAt.isValid || startsAt.toMillis() <= Date.now()) {
+    return res.status(400).json({
+    success: false,
+    error: "Indica una fecha y hora futuras válidas.",
+    });
     }
 
     const existeClase = await Class.findById(id);
@@ -25,6 +36,7 @@ export const asignarHorario = async (req, res) => {
       classId: id,
       date,
       time,
+      startsAt: startsAt.toJSDate(),
       availableSpots: existeClase.capacity,
     });
 
