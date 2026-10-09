@@ -9,7 +9,6 @@ function UsersManagement() {
     const [error, setError] = useState("");
     const [showForm, setShowForm] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    const [usersExpanded, setUsersExpanded] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         lastName: "",
@@ -305,33 +304,11 @@ function UsersManagement() {
                         Crear usuario
                     </button>
 
-                    <button
-                        type="button"
-                        className="toggle-users-button"
-                        onClick={() => setUsersExpanded(!usersExpanded)}
-                        aria-label={
-                            usersExpanded
-                                ? "Minimizar gestión de usuarios"
-                                : "Mostrar gestión de usuarios"
-                        }
-                    >
-                        <img
-                            src={
-                                usersExpanded
-                                    ? "/icons/chevron-up.svg"
-                                    : "/icons/chevron-down.svg"
-                            }
-                            alt=""
-                        />
-                    </button>
-
                 </div>
 
             </div>
 
-            {usersExpanded && (
-                <>
-                    {loading && <p>Cargando usuarios...</p>}
+            {loading && <p>Cargando usuarios...</p>}
 
                     {error && <p>{error}</p>}
 
@@ -390,8 +367,6 @@ function UsersManagement() {
                             ))}
 
                         </div>
-                    )}
-                </>
             )}
 
         </section>

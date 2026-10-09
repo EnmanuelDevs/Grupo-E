@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../services/api";
@@ -6,11 +7,52 @@ import CapacityManagement from "../components/admin/CapacityManagement";
 import UsersManagement from "../components/admin/UsersManagement";
 import EditClass from "../components/admin/EditClass";
 import Swal from "sweetalert2";
-
 import "./admin-dashboard.css";
+
+function AdminModal({ title, onClose, children }) {
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === "Escape") onClose();
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="admin-modal-overlay"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="admin-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="admin-modal-title"
+      >
+        <header className="admin-modal-header">
+          <h2 id="admin-modal-title">{title}</h2>
+          <button
+            type="button"
+            className="admin-modal-close"
+            onClick={onClose}
+            aria-label="Cerrar ventana"
+          >
+            ×
+          </button>
+        </header>
+
+        <div className="admin-modal-content">{children}</div>
+      </section>
+    </div>
+  );
+}
 
 function AdminDashboard() {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,10 +60,12 @@ function AdminDashboard() {
   const [classesError, setClassesError] = useState("");
   const [search, setSearch] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
     const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/login", { replace: true });
       return () => controller.abort();
@@ -31,6 +75,7 @@ function AdminDashboard() {
       try {
         const options = { token, signal: controller.signal };
         const profile = await apiRequest("/auth/me", options);
+
         if (controller.signal.aborted) return;
 
         if (profile.active === false) {
@@ -43,33 +88,56 @@ function AdminDashboard() {
           });
           return;
         }
+
         if (profile.role === "member") {
           navigate("/member-dashboard", { replace: true });
           return;
         }
+
         if (profile.role !== "admin") {
-          setAccessError("Esta sección es exclusiva para administradores.");
+          setAccessError(
+            "Esta sección es exclusiva para administradores.",
+          );
           return;
         }
 
         await apiRequest("/auth/admin-dashboard", options);
+
         if (controller.signal.aborted) return;
         setUser(profile);
 
         try {
           const records = await apiRequest("/classes", options);
-          if (!Array.isArray(records))
+
+          if (!Array.isArray(records)) {
             throw new Error(
               "El listado de clases no tiene el formato esperado.",
             );
+          }
+
           if (!controller.signal.aborted) setClasses(records);
         } catch (error) {
-          if (error.name === "AbortError" || controller.signal.aborted) return;
-          if (error.status === 401 || error.status === 403) throw error;
+          if (
+            error.name === "AbortError" ||
+            controller.signal.aborted
+          ) {
+            return;
+          }
+
+          if (error.status === 401 || error.status === 403) {
+            throw error;
+          }
+
           setClassesError(error.message);
         }
       } catch (error) {
-        if (error.name === "AbortError" || controller.signal.aborted) return;
+        if (
+          error.name === "AbortError" ||
+          controller.signal.aborted
+        ) {
+          return;
+        }
+
         if (error.status === 401) {
           localStorage.removeItem("token");
           navigate("/login", {
@@ -92,6 +160,7 @@ function AdminDashboard() {
     }
 
     loadDashboard();
+
     return () => controller.abort();
   }, [navigate, attempt]);
 
@@ -110,6 +179,12 @@ function AdminDashboard() {
   }
 
   function handleClassCreated() {
+    setActiveModal(null);
+    reload();
+  }
+
+  function handleModuleUpdated() {
+    setActiveModal(null);
     reload();
   }
 
@@ -117,59 +192,62 @@ function AdminDashboard() {
     const { value: formValues } = await Swal.fire({
       title: `Nuevo horario para ${classTitle}`,
       html: `
-      <div style="display: flex; flex-direction: column; gap: 10px; text-align: left; margin-top: 15px;">
-        <label for="swal-date" style="font-size: 0.9rem; font-weight: bold; color: #374151;">Fecha de la clase:</label>
-        <input id="swal-date" type="date" class="swal2-input" style="margin: 0; width: 100%; max-width: 100%; box-sizing: border-box;">
-
-        <label for="swal-time" style="font-size: 0.9rem; font-weight: bold; color: #374151; margin-top: 10px;">Hora de la clase:</label>
-        <input id="swal-time" type="time" class="swal2-input" style="margin: 0; width: 100%; max-width: 100%; box-sizing: border-box;">
-      </div>
-    `,
+        <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-top:15px;">
+          <label for="swal-date" style="font-size:0.9rem;font-weight:bold;color:#374151;">Fecha de la clase:</label>
+          <input id="swal-date" type="date" class="swal2-input" style="margin:0;width:100%;max-width:100%;box-sizing:border-box;">
+          <label for="swal-time" style="font-size:0.9rem;font-weight:bold;color:#374151;margin-top:10px;">Hora de la clase:</label>
+          <input id="swal-time" type="time" class="swal2-input" style="margin:0;width:100%;max-width:100%;box-sizing:border-box;">
+        </div>
+      `,
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: "Guardar Horario",
+      confirmButtonText: "Guardar horario",
       cancelButtonText: "Cancelar",
-      confirmButtonColor: "#10b981",
+      confirmButtonColor: "#a31a1a",
       preConfirm: () => {
         const date = document.getElementById("swal-date").value;
         const time = document.getElementById("swal-time").value;
+
         if (!date || !time) {
-          Swal.showValidationMessage("Debes seleccionar una fecha y una hora");
+          Swal.showValidationMessage(
+            "Debes seleccionar una fecha y una hora",
+          );
           return false;
         }
+
         return { date, time };
       },
     });
 
-    if (formValues) {
-      const token = localStorage.getItem("token");
-      try {
-        await apiRequest(`/classes/${classId}/schedule`, {
-          method: "POST",
-          token: token,
-          body: {
-            date: formValues.date,
-            time: formValues.time,
-          },
-        });
+    if (!formValues) return;
 
-        Swal.fire({
-          title: "¡Horario agregado!",
-          text: `Se ha añadido un nuevo horario a la clase ${classTitle}.`,
-          icon: "success",
-          confirmButtonColor: "#10b981",
-        });
+    try {
+      await apiRequest(`/classes/${classId}/schedule`, {
+        method: "POST",
+        token: localStorage.getItem("token"),
+        body: {
+          date: formValues.date,
+          time: formValues.time,
+        },
+      });
 
-        reload();
-      } catch (error) {
-        console.error("Error agregando horario:", error);
-        Swal.fire({
-          title: "Error",
-          text: error.message || "No se pudo agregar el horario.",
-          icon: "error",
-          confirmButtonColor: "#e11d48",
-        });
-      }
+      await Swal.fire({
+        title: "¡Horario agregado!",
+        text: `Se ha añadido un nuevo horario a la clase ${classTitle}.`,
+        icon: "success",
+        confirmButtonColor: "#a31a1a",
+      });
+
+      reload();
+    } catch (error) {
+      console.error("Error agregando horario:", error);
+
+      Swal.fire({
+        title: "Error",
+        text: error.message || "No se pudo agregar el horario.",
+        icon: "error",
+        confirmButtonColor: "#a31a1a",
+      });
     }
   };
 
@@ -179,7 +257,7 @@ function AdminDashboard() {
       text: "Esta acción eliminará permanentemente la clase y todos sus horarios. No podrás revertirlo.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#e11d48",
+      confirmButtonColor: "#a31a1a",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Sí, eliminar clase",
       cancelButtonText: "Cancelar",
@@ -187,29 +265,28 @@ function AdminDashboard() {
 
     if (!result.isConfirmed) return;
 
-    const token = localStorage.getItem("token");
-
     try {
       await apiRequest(`/classes/${classId}`, {
         method: "DELETE",
-        token: token,
+        token: localStorage.getItem("token"),
       });
 
-      Swal.fire({
+      await Swal.fire({
         title: "¡Eliminada!",
         text: "La clase y sus horarios han sido borrados exitosamente.",
         icon: "success",
-        confirmButtonColor: "#10b981",
+        confirmButtonColor: "#a31a1a",
       });
 
       reload();
     } catch (error) {
       console.error("Error eliminando la clase:", error);
+
       Swal.fire({
         title: "Error al eliminar",
         text: error.message || "No se pudo eliminar la clase.",
         icon: "error",
-        confirmButtonColor: "#e11d48",
+        confirmButtonColor: "#a31a1a",
       });
     }
   };
@@ -226,7 +303,9 @@ function AdminDashboard() {
     return (
       <main className="admin-status">
         <h1>No se pudo abrir el panel</h1>
-        <p role="alert">{accessError || "No se pudo verificar tu sesión."}</p>
+        <p role="alert">
+          {accessError || "No se pudo verificar tu sesión."}
+        </p>
         <div className="admin-actions">
           <button className="admin-primary" onClick={reload}>
             Reintentar
@@ -240,16 +319,23 @@ function AdminDashboard() {
   }
 
   const query = search.trim().toLocaleLowerCase("es");
+
   const filteredClasses = classes.filter((item) =>
     `${item.title || ""} ${item.instructor || ""}`
       .toLocaleLowerCase("es")
       .includes(query),
   );
+
   const withSpots = classes.filter(
-    (item) => Number.isFinite(item.availableSpots) && item.availableSpots > 0,
+    (item) =>
+      Number.isFinite(item.availableSpots) &&
+      item.availableSpots > 0,
   ).length;
+
   const withoutSpots = classes.filter(
-    (item) => Number.isFinite(item.availableSpots) && item.availableSpots <= 0,
+    (item) =>
+      Number.isFinite(item.availableSpots) &&
+      item.availableSpots <= 0,
   ).length;
 
   return (
@@ -264,19 +350,24 @@ function AdminDashboard() {
             DZ
           </span>
           <span>
-            DYNAMIC ZONE<small>Administración</small>
+            DYNAMIC ZONE
+            <small>Administración</small>
           </span>
         </a>
+
         <nav aria-label="Navegación del administrador">
           <a href="#admin-overview">Resumen</a>
+          <a href="#admin-tools">Herramientas administrativas</a>
           <a href="#admin-classes">Clases registradas</a>
         </nav>
+
         <div className="admin-coming">
           <p>Próximas funciones</p>
           <span>Gestión de clases</span>
           <span>Usuarios e instructores</span>
           <span>Reservas y reportes</span>
         </div>
+
         <button className="admin-signout" onClick={logout}>
           Cerrar sesión
         </button>
@@ -285,7 +376,9 @@ function AdminDashboard() {
       <main className="admin-main" id="admin-overview">
         <header className="admin-header">
           <div>
-            <p className="admin-eyebrow">TU GIMNASIO, EN UN VISTAZO</p>
+            <p className="admin-eyebrow">
+              TU GIMNASIO, EN UN VISTAZO
+            </p>
             <h1>Panel del administrador</h1>
             <p>
               Bienvenido, {user.name} {user.lastName}.
@@ -303,28 +396,136 @@ function AdminDashboard() {
             <strong>{classesError ? "—" : classes.length}</strong>
             <span>En el catálogo del gimnasio</span>
           </article>
+
           <article className="admin-stat">
             <p>Con cupos registrados</p>
             <strong>{classesError ? "—" : withSpots}</strong>
             <span>Clases con más de cero cupos</span>
           </article>
+
           <article className="admin-stat">
             <p>Sin cupos registrados</p>
             <strong>{classesError ? "—" : withoutSpots}</strong>
             <span>Clases con cero cupos o menos</span>
           </article>
         </section>
+
         <p className="admin-note">
-          Disponibilidad según los registros actuales. Las reservas todavía no
-          están habilitadas.
+          Disponibilidad según los registros actuales. Las reservas
+          todavía no están habilitadas.
         </p>
 
-        <UsersManagement />
-        <CreateClass onClassCreated={handleClassCreated} />
+        <section
+          className="admin-tools"
+          id="admin-tools"
+          aria-labelledby="admin-tools-title"
+        >
+          <div className="admin-tools-heading">
+            <div>
+              <h2 id="admin-tools-title">Herramientas administrativas</h2>
+              <p>
+                Selecciona una herramienta para gestionar tu gimnasio.
+              </p>
+            </div>
+          </div>
 
-        <EditClass classes={classes} onClassUpdated={reload} />
+          <div className="admin-tools-grid">
+            <button
+              className="admin-tool-card"
+              onClick={() => setActiveModal("users")}
+            >
+              <span className="admin-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M23 11h-6"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="admin-tool-copy">
+                <strong>Usuarios</strong>
+                <small>Gestionar usuarios e instructores</small>
+              </span>
+              <span className="admin-tool-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </button>
 
-        <CapacityManagement classes={classes} onCapacityUpdated={reload} />
+            <button
+              className="admin-tool-card"
+              onClick={() => setActiveModal("create")}
+            >
+              <span className="admin-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 5v14M5 12h14"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+              <span className="admin-tool-copy">
+                <strong>Crear clase</strong>
+                <small>Añadir una nueva clase al catálogo</small>
+              </span>
+              <span className="admin-tool-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </button>
+
+            <button
+              className="admin-tool-card"
+              onClick={() => setActiveModal("edit")}
+            >
+              <span className="admin-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="admin-tool-copy">
+                <strong>Editar clases</strong>
+                <small>Actualizar la información existente</small>
+              </span>
+              <span className="admin-tool-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </button>
+
+            <button
+              className="admin-tool-card"
+              onClick={() => setActiveModal("capacity")}
+            >
+              <span className="admin-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 19V5M4 19h16M8 15v-4M12 15V7M16 15V9"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="admin-tool-copy">
+                <strong>Gestionar cupos</strong>
+                <small>Controlar la capacidad de las clases</small>
+              </span>
+              <span className="admin-tool-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </button>
+          </div>
+        </section>
 
         <section
           className="admin-panel"
@@ -334,14 +535,20 @@ function AdminDashboard() {
           <div className="admin-panel-heading">
             <div>
               <h2 id="admin-classes-title">Clases registradas</h2>
-              <p>Consulta la actividad y los cupos de tu gimnasio.</p>
+              <p>
+                Consulta la actividad y los cupos de tu gimnasio.
+              </p>
             </div>
+
             <button className="admin-secondary" onClick={reload}>
               Actualizar
             </button>
           </div>
+
           <div className="admin-filter">
-            <label htmlFor="admin-search">Buscar por clase o instructor</label>
+            <label htmlFor="admin-search">
+              Buscar por clase o instructor
+            </label>
             <input
               id="admin-search"
               type="search"
@@ -362,12 +569,16 @@ function AdminDashboard() {
           ) : classes.length === 0 ? (
             <div className="admin-empty">
               <h3>Aún no hay clases registradas</h3>
-              <p>Cuando se registren clases en el gimnasio, aparecerán aquí.</p>
+              <p>
+                Cuando se registren clases en el gimnasio, aparecerán aquí.
+              </p>
             </div>
           ) : filteredClasses.length === 0 ? (
             <div className="admin-empty">
               <h3>No encontramos coincidencias</h3>
-              <p>Prueba con otro nombre de clase o instructor.</p>
+              <p>
+                Prueba con otro nombre de clase o instructor.
+              </p>
             </div>
           ) : (
             <div className="admin-table-scroll">
@@ -386,6 +597,7 @@ function AdminDashboard() {
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {filteredClasses.map((item) => (
                     <tr key={item._id || item.id}>
@@ -401,33 +613,36 @@ function AdminDashboard() {
                       </td>
                       <td>
                         <span
-                          className={`admin-spots ${item.availableSpots > 0 ? "admin-spots-open" : ""}`}
+                          className={`admin-spots ${
+                            item.availableSpots > 0
+                              ? "admin-spots-open"
+                              : ""
+                          }`}
                         >
                           {Number.isFinite(item.availableSpots)
                             ? item.availableSpots
                             : "Sin dato"}
                         </span>
                       </td>
-                      <td
-                        style={{
-                          textAlign: "center",
-                          display: "flex",
-                          gap: "8px",
-                          justifyContent: "center",
-                        }}
-                      >
+                      <td className="admin-table-actions">
                         <button
                           className="btn-admin-add"
                           onClick={() =>
-                            handleAddSchedule(item._id || item.id, item.title)
+                            handleAddSchedule(
+                              item._id || item.id,
+                              item.title,
+                            )
                           }
                           aria-label={`Añadir horario a ${item.title}`}
                         >
                           + Horario
                         </button>
+
                         <button
                           className="btn-admin-delete"
-                          onClick={() => handleDeleteClass(item._id || item.id)}
+                          onClick={() =>
+                            handleDeleteClass(item._id || item.id)
+                          }
                           aria-label={`Eliminar clase de ${item.title}`}
                         >
                           Eliminar
@@ -440,10 +655,53 @@ function AdminDashboard() {
             </div>
           )}
         </section>
+
         <footer className="admin-footer">
           Dynamic Zone · Panel administrativo
         </footer>
       </main>
+
+      {activeModal === "users" && (
+        <AdminModal
+          title="Gestión de usuarios"
+          onClose={() => setActiveModal(null)}
+        >
+          <UsersManagement />
+        </AdminModal>
+      )}
+
+      {activeModal === "create" && (
+        <AdminModal
+          title="Crear una clase"
+          onClose={() => setActiveModal(null)}
+        >
+          <CreateClass onClassCreated={handleClassCreated} />
+        </AdminModal>
+      )}
+
+      {activeModal === "edit" && (
+        <AdminModal
+          title="Editar clases"
+          onClose={() => setActiveModal(null)}
+        >
+          <EditClass
+            classes={classes}
+            onClassUpdated={handleModuleUpdated}
+          />
+        </AdminModal>
+      )}
+
+      {activeModal === "capacity" && (
+        <AdminModal
+          title="Gestión de cupos"
+          onClose={() => setActiveModal(null)}
+        >
+          <CapacityManagement
+            classes={classes}
+            onCapacityUpdated={handleModuleUpdated}
+          />
+        </AdminModal>
+      )}
     </div>
   );
 }

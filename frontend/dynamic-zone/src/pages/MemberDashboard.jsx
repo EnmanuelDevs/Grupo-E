@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./member-dashboard.css";
 import Swal from "sweetalert2";
+import { ShieldCheck, CalendarCheck, Dumbbell, } from "lucide-react";
+
+
 
 const MemberDashboard = () => {
   const [user, setUser] = useState(null);
@@ -304,14 +307,23 @@ const MemberDashboard = () => {
         <div className="dashboard-content">
           <section className="metrics-row">
             <div className="metric-card">
+              <div className="metric-icon">
+                <ShieldCheck size={30} strokeWidth={1.7} />
+              </div>
               <span className="metric-title">Estado de Membresía</span>
               <span className="metric-badge success">Activa</span>
             </div>
             <div className="metric-card">
+              <div className="metric-icon">
+                <CalendarCheck size={30} strokeWidth={1.7} />
+              </div>
               <span className="metric-title">Reservas Activas</span>
               <span className="metric-value">{myReservations.length}</span>
             </div>
             <div className="metric-card">
+              <div className="metric-icon">
+                <Dumbbell size={30} strokeWidth={1.7} />
+              </div>
               <span className="metric-title">Clases Disponibles</span>
               <span className="metric-value">{classes.length} opciones</span>
             </div>
@@ -494,7 +506,7 @@ const MemberDashboard = () => {
                                 fontWeight: "500",
                               }}
                             >
-                              📅 {res.date} a las ⏰ {res.time}
+                              {res.date} a las {res.time}
                             </p>
                           </div>
 

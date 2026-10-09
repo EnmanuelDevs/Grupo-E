@@ -111,8 +111,10 @@
 }
 
 .metric-card {
+  position: relative;
+  overflow: hidden;
   background: rgba(255, 255, 255, 0.65);
-  padding: 20px;
+  padding: 20px 88px 20px 20px;;
   border-radius: var(--border-radius);
   border: 1px solid rgba(255, 255, 255, 0.8);
 
@@ -128,6 +130,27 @@
   gap: 8px;
 
   transition: all 0.25s ease;
+}
+
+.metric-icon {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+  background: rgba(163, 26, 26, 0.07);
+  border: 1px solid rgba(163, 26, 26, 0.10);
+
+  color: rgba(163, 26, 26, 0.7);
+  opacity: 0.75;
+  pointer-events: none;
 }
 
 .metric-title {
@@ -300,7 +323,7 @@
 
 
 .btn-primary {
-  background: linear-gradient(90deg, #30c582 0%, #35965f 100%);
+  background: #30c582;
   color: white;
   border: none;
   padding: 10px 12px;
@@ -313,7 +336,7 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(90deg, #ffffff 0%, #ecedec 100%);
+  background: white;
   color: #35965f;
   border: 1px solid #35965f;
   padding: 8px 10px;
@@ -321,7 +344,6 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .btn-primary:disabled {
@@ -346,8 +368,8 @@
   border: 1px solid #b91c1c;
   padding: 8px 10px;
   border-radius: 8px;
-  font-size: 14px;
   font-weight: 600;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
