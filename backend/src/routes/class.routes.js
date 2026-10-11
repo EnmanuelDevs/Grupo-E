@@ -8,6 +8,7 @@ import {
   reserveClass,
   cancelReservation,
   deleteClass,
+  getOccupancyReport,
 } from "../controllers/class.controller.js";
 
 import { asignarHorario } from "../controllers/schedule.controller.js";
@@ -23,6 +24,13 @@ const router = express.Router();
 
 router.get("/", verificarToken, getClasses);
 
+router.get(
+  "/report/occupancy",
+  verificarToken,
+  verificarAdmin,
+  getOccupancyReport,
+);
+
 router.post("/", verificarToken, verificarAdmin, createClass);
 
 router.post("/:id/schedule", verificarToken, verificarAdmin, asignarHorario);
@@ -30,7 +38,7 @@ router.patch("/:id", verificarToken, verificarAdmin, updateClass);
 
 router.patch("/:id/capacity", verificarToken, verificarAdmin, updateCapacity);
 
-router.delete("/:id", deleteClass);
+router.delete("/:id", verificarToken, verificarAdmin, deleteClass);
 
 router.post(
   "/:id/reserve",

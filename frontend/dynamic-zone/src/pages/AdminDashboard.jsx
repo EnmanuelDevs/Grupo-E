@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../services/api";
@@ -6,6 +5,7 @@ import CreateClass from "../components/admin/CreateClass";
 import CapacityManagement from "../components/admin/CapacityManagement";
 import UsersManagement from "../components/admin/UsersManagement";
 import EditClass from "../components/admin/EditClass";
+import OccupancyReport from "../components/admin/OccupancyReport";
 import Swal from "sweetalert2";
 import "./admin-dashboard.css";
 
@@ -95,9 +95,7 @@ function AdminDashboard() {
         }
 
         if (profile.role !== "admin") {
-          setAccessError(
-            "Esta sección es exclusiva para administradores.",
-          );
+          setAccessError("Esta sección es exclusiva para administradores.");
           return;
         }
 
@@ -117,10 +115,7 @@ function AdminDashboard() {
 
           if (!controller.signal.aborted) setClasses(records);
         } catch (error) {
-          if (
-            error.name === "AbortError" ||
-            controller.signal.aborted
-          ) {
+          if (error.name === "AbortError" || controller.signal.aborted) {
             return;
           }
 
@@ -131,10 +126,7 @@ function AdminDashboard() {
           setClassesError(error.message);
         }
       } catch (error) {
-        if (
-          error.name === "AbortError" ||
-          controller.signal.aborted
-        ) {
+        if (error.name === "AbortError" || controller.signal.aborted) {
           return;
         }
 
@@ -209,9 +201,7 @@ function AdminDashboard() {
         const time = document.getElementById("swal-time").value;
 
         if (!date || !time) {
-          Swal.showValidationMessage(
-            "Debes seleccionar una fecha y una hora",
-          );
+          Swal.showValidationMessage("Debes seleccionar una fecha y una hora");
           return false;
         }
 
@@ -303,9 +293,7 @@ function AdminDashboard() {
     return (
       <main className="admin-status">
         <h1>No se pudo abrir el panel</h1>
-        <p role="alert">
-          {accessError || "No se pudo verificar tu sesión."}
-        </p>
+        <p role="alert">{accessError || "No se pudo verificar tu sesión."}</p>
         <div className="admin-actions">
           <button className="admin-primary" onClick={reload}>
             Reintentar
@@ -327,15 +315,11 @@ function AdminDashboard() {
   );
 
   const withSpots = classes.filter(
-    (item) =>
-      Number.isFinite(item.availableSpots) &&
-      item.availableSpots > 0,
+    (item) => Number.isFinite(item.availableSpots) && item.availableSpots > 0,
   ).length;
 
   const withoutSpots = classes.filter(
-    (item) =>
-      Number.isFinite(item.availableSpots) &&
-      item.availableSpots <= 0,
+    (item) => Number.isFinite(item.availableSpots) && item.availableSpots <= 0,
   ).length;
 
   return (
@@ -376,9 +360,7 @@ function AdminDashboard() {
       <main className="admin-main" id="admin-overview">
         <header className="admin-header">
           <div>
-            <p className="admin-eyebrow">
-              TU GIMNASIO, EN UN VISTAZO
-            </p>
+            <p className="admin-eyebrow">TU GIMNASIO, EN UN VISTAZO</p>
             <h1>Panel del administrador</h1>
             <p>
               Bienvenido, {user.name} {user.lastName}.
@@ -411,8 +393,8 @@ function AdminDashboard() {
         </section>
 
         <p className="admin-note">
-          Disponibilidad según los registros actuales. Las reservas
-          todavía no están habilitadas.
+          Disponibilidad según los registros actuales. Las reservas todavía no
+          están habilitadas.
         </p>
 
         <section
@@ -423,9 +405,7 @@ function AdminDashboard() {
           <div className="admin-tools-heading">
             <div>
               <h2 id="admin-tools-title">Herramientas administrativas</h2>
-              <p>
-                Selecciona una herramienta para gestionar tu gimnasio.
-              </p>
+              <p>Selecciona una herramienta para gestionar tu gimnasio.</p>
             </div>
           </div>
 
@@ -524,6 +504,30 @@ function AdminDashboard() {
                 ↗
               </span>
             </button>
+
+            <button
+              className="admin-tool-card"
+              onClick={() => setActiveModal("report")}
+            >
+              <span className="admin-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M3 3v18h18M7 14l4-4 4 4 6-6"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="admin-tool-copy">
+                <strong>Reporte de ocupación</strong>
+                <small>Consultar estadísticas y métricas</small>
+              </span>
+              <span className="admin-tool-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </button>
           </div>
         </section>
 
@@ -535,9 +539,7 @@ function AdminDashboard() {
           <div className="admin-panel-heading">
             <div>
               <h2 id="admin-classes-title">Clases registradas</h2>
-              <p>
-                Consulta la actividad y los cupos de tu gimnasio.
-              </p>
+              <p>Consulta la actividad y los cupos de tu gimnasio.</p>
             </div>
 
             <button className="admin-secondary" onClick={reload}>
@@ -546,9 +548,7 @@ function AdminDashboard() {
           </div>
 
           <div className="admin-filter">
-            <label htmlFor="admin-search">
-              Buscar por clase o instructor
-            </label>
+            <label htmlFor="admin-search">Buscar por clase o instructor</label>
             <input
               id="admin-search"
               type="search"
@@ -569,16 +569,12 @@ function AdminDashboard() {
           ) : classes.length === 0 ? (
             <div className="admin-empty">
               <h3>Aún no hay clases registradas</h3>
-              <p>
-                Cuando se registren clases en el gimnasio, aparecerán aquí.
-              </p>
+              <p>Cuando se registren clases en el gimnasio, aparecerán aquí.</p>
             </div>
           ) : filteredClasses.length === 0 ? (
             <div className="admin-empty">
               <h3>No encontramos coincidencias</h3>
-              <p>
-                Prueba con otro nombre de clase o instructor.
-              </p>
+              <p>Prueba con otro nombre de clase o instructor.</p>
             </div>
           ) : (
             <div className="admin-table-scroll">
@@ -614,9 +610,7 @@ function AdminDashboard() {
                       <td>
                         <span
                           className={`admin-spots ${
-                            item.availableSpots > 0
-                              ? "admin-spots-open"
-                              : ""
+                            item.availableSpots > 0 ? "admin-spots-open" : ""
                           }`}
                         >
                           {Number.isFinite(item.availableSpots)
@@ -628,10 +622,7 @@ function AdminDashboard() {
                         <button
                           className="btn-admin-add"
                           onClick={() =>
-                            handleAddSchedule(
-                              item._id || item.id,
-                              item.title,
-                            )
+                            handleAddSchedule(item._id || item.id, item.title)
                           }
                           aria-label={`Añadir horario a ${item.title}`}
                         >
@@ -640,9 +631,7 @@ function AdminDashboard() {
 
                         <button
                           className="btn-admin-delete"
-                          onClick={() =>
-                            handleDeleteClass(item._id || item.id)
-                          }
+                          onClick={() => handleDeleteClass(item._id || item.id)}
                           aria-label={`Eliminar clase de ${item.title}`}
                         >
                           Eliminar
@@ -680,14 +669,8 @@ function AdminDashboard() {
       )}
 
       {activeModal === "edit" && (
-        <AdminModal
-          title="Editar clases"
-          onClose={() => setActiveModal(null)}
-        >
-          <EditClass
-            classes={classes}
-            onClassUpdated={handleModuleUpdated}
-          />
+        <AdminModal title="Editar clases" onClose={() => setActiveModal(null)}>
+          <EditClass classes={classes} onClassUpdated={handleModuleUpdated} />
         </AdminModal>
       )}
 
@@ -700,6 +683,15 @@ function AdminDashboard() {
             classes={classes}
             onCapacityUpdated={handleModuleUpdated}
           />
+        </AdminModal>
+      )}
+
+      {activeModal === "report" && (
+        <AdminModal
+          title="Reporte de ocupación"
+          onClose={() => setActiveModal(null)}
+        >
+          <OccupancyReport />
         </AdminModal>
       )}
     </div>

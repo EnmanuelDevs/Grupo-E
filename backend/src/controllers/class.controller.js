@@ -10,9 +10,37 @@ export const getClasses = async (req, res) => {
 
     const classesWithSchedules = await Promise.all(
       classes.map(async (gymClass) => {
-        const schedules = await Schedule.find({ classId: gymClass._id }).select(
-          "_id date time availableSpots participants",
-        );
+        const schedules = await Schedule.find({ classId: gymClass._id })
+          .select("_id date time availableSpots participants")
+          .lean();
+
+        let totalClassOccupied = 0;
+        let totalClassCapacity = 0;
+
+        const schedulesWithStats = schedules.map((sch) => {
+          const occupiedSpots = sch.participants ? sch.participants.length : 0;
+          const scheduleCapacity = (sch.availableSpots || 0) + occupiedSpots;
+
+          totalClassOccupied += occupiedSpots;
+          totalClassCapacity += scheduleCapacity;
+
+          const occupancyPercentage =
+            scheduleCapacity > 0
+              ? Math.round((occupiedSpots / scheduleCapacity) * 100)
+              : 0;
+
+          return {
+            ...sch,
+            occupiedSpots,
+            totalCapacity: scheduleCapacity,
+            occupancyPercentage,
+          };
+        });
+
+        const classOccupancyPercentage =
+          totalClassCapacity > 0
+            ? Math.round((totalClassOccupied / totalClassCapacity) * 100)
+            : 0;
 
         const instructorFullName = gymClass.instructor
           ? `${gymClass.instructor.name} ${gymClass.instructor.lastName}`
@@ -21,7 +49,14 @@ export const getClasses = async (req, res) => {
         return {
           ...gymClass,
           instructor: instructorFullName,
-          schedules: schedules,
+          schedules: schedulesWithStats,
+
+          occupancyReport: {
+            totalCapacity: totalClassCapacity,
+            totalOccupied: totalClassOccupied,
+            totalAvailable: totalClassCapacity - totalClassOccupied,
+            percentage: classOccupancyPercentage,
+          },
         };
       }),
     );
@@ -328,6 +363,91 @@ export const deleteClass = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: "Error del servidor al intentar eliminar la clase.",
+    });
+  }
+};
+
+export const getOccupancyReport = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const classes = await Class.find()
+      .populate("instructor", "name lastName")
+      .select("title instructor")
+      .lean();
+
+    const occupancyData = await Promise.all(
+      classes.map(async (gymClass) => {
+        let scheduleQuery = { classId: gymClass._id };
+
+        if (startDate || endDate) {
+          scheduleQuery.date = {};
+          if (startDate) scheduleQuery.date.$gte = startDate;
+          if (endDate) scheduleQuery.date.$lte = endDate;
+        }
+
+        const schedules = await Schedule.find(scheduleQuery)
+          .select("date time availableSpots participants")
+          .lean();
+
+        let totalClassOccupied = 0;
+        let totalClassCapacity = 0;
+
+        const schedulesWithStats = schedules.map((sch) => {
+          const occupiedSpots = sch.participants ? sch.participants.length : 0;
+          const scheduleCapacity = (sch.availableSpots || 0) + occupiedSpots;
+
+          totalClassOccupied += occupiedSpots;
+          totalClassCapacity += scheduleCapacity;
+
+          const occupancyPercentage =
+            scheduleCapacity > 0
+              ? Math.round((occupiedSpots / scheduleCapacity) * 100)
+              : 0;
+
+          return {
+            date: sch.date,
+            time: sch.time,
+            capacity: scheduleCapacity,
+            occupied: occupiedSpots,
+            available: sch.availableSpots || 0,
+            percentage: occupancyPercentage,
+          };
+        });
+
+        const classOccupancyPercentage =
+          totalClassCapacity > 0
+            ? Math.round((totalClassOccupied / totalClassCapacity) * 100)
+            : 0;
+
+        const instructorFullName = gymClass.instructor
+          ? `${gymClass.instructor.name} ${gymClass.instructor.lastName}`
+          : "Sin asignar";
+
+        return {
+          classId: gymClass._id,
+          title: gymClass.title,
+          instructor: instructorFullName,
+          globalStats: {
+            totalCapacity: totalClassCapacity,
+            totalOccupied: totalClassOccupied,
+            totalAvailable: totalClassCapacity - totalClassOccupied,
+            overallPercentage: classOccupancyPercentage,
+          },
+          schedulesDetails: schedulesWithStats,
+        };
+      }),
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: occupancyData,
+    });
+  } catch (error) {
+    console.error("Error al generar el reporte de ocupación:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Error interno del servidor al generar el reporte.",
     });
   }
 };
