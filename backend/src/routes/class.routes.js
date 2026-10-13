@@ -9,6 +9,7 @@ import {
   cancelReservation,
   deleteClass,
   getOccupancyReport,
+  getDemandReport,
 } from "../controllers/class.controller.js";
 
 import { asignarHorario } from "../controllers/schedule.controller.js";
@@ -30,6 +31,8 @@ router.get(
   verificarAdmin,
   getOccupancyReport,
 );
+
+router.get("/report/demand", verificarToken, verificarAdmin, getDemandReport);
 
 router.post("/", verificarToken, verificarAdmin, createClass);
 

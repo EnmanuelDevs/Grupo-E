@@ -6,6 +6,7 @@ import CapacityManagement from "../components/admin/CapacityManagement";
 import UsersManagement from "../components/admin/UsersManagement";
 import EditClass from "../components/admin/EditClass";
 import OccupancyReport from "../components/admin/OccupancyReport";
+import DemandReport from "../components/admin/DemandReport";
 import Swal from "sweetalert2";
 import "./admin-dashboard.css";
 
@@ -528,6 +529,30 @@ function AdminDashboard() {
                 ↗
               </span>
             </button>
+
+            <button
+              className="admin-tool-card"
+              onClick={() => setActiveModal("demand")}
+            >
+              <span className="admin-tool-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="admin-tool-copy">
+                <strong>Clases demandadas</strong>
+                <small>Ver el top de clases más reservadas</small>
+              </span>
+              <span className="admin-tool-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </button>
           </div>
         </section>
 
@@ -692,6 +717,15 @@ function AdminDashboard() {
           onClose={() => setActiveModal(null)}
         >
           <OccupancyReport />
+        </AdminModal>
+      )}
+
+      {activeModal === "demand" && (
+        <AdminModal
+          title="Top Clases Más Demandadas"
+          onClose={() => setActiveModal(null)}
+        >
+          <DemandReport />
         </AdminModal>
       )}
     </div>

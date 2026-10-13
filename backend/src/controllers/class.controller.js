@@ -451,3 +451,61 @@ export const getOccupancyReport = async (req, res) => {
     });
   }
 };
+
+export const getDemandReport = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const classes = await Class.find()
+      .populate("instructor", "name lastName")
+      .select("title instructor")
+      .lean();
+
+    const demandData = await Promise.all(
+      classes.map(async (gymClass) => {
+        let scheduleQuery = { classId: gymClass._id };
+
+        if (startDate || endDate) {
+          scheduleQuery.date = {};
+          if (startDate) scheduleQuery.date.$gte = startDate;
+          if (endDate) scheduleQuery.date.$lte = endDate;
+        }
+
+        const schedules = await Schedule.find(scheduleQuery)
+          .select("participants")
+          .lean();
+
+        let totalReservations = 0;
+        schedules.forEach((sch) => {
+          totalReservations += sch.participants ? sch.participants.length : 0;
+        });
+
+        const instructorFullName = gymClass.instructor
+          ? `${gymClass.instructor.name} ${gymClass.instructor.lastName}`
+          : "Sin asignar";
+
+        return {
+          classId: gymClass._id,
+          title: gymClass.title,
+          instructor: instructorFullName,
+          totalReservations,
+        };
+      }),
+    );
+
+    const sortedDemandData = demandData.sort(
+      (a, b) => b.totalReservations - a.totalReservations,
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: sortedDemandData,
+    });
+  } catch (error) {
+    console.error("Error al generar el reporte de demanda:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Error interno del servidor al generar el reporte de demanda.",
+    });
+  }
+};
