@@ -7,6 +7,7 @@ function UsersManagement() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [showForm, setShowForm] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({
@@ -199,6 +200,20 @@ function UsersManagement() {
         }
     };
 
+    const filteredUsers = users.filter((user) => {
+        const search = searchTerm.toLowerCase().trim();
+
+        const fullName = `${user.name} ${user.lastName}`.toLowerCase();
+        const email = user.email.toLowerCase();
+        const role = user.role.toLowerCase();
+
+        return (
+            fullName.includes(search) ||
+            email.includes(search) ||
+            role.includes(search)
+        );
+    });
+
     useEffect(() => {
         loadUsers();
     }, []);
@@ -287,8 +302,15 @@ function UsersManagement() {
                         </form>
                     </div>
                 )}
-
-                <h2>Gestión de usuarios</h2>
+                <div className="users-search">
+                    <input
+                        type="search"
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                        placeholder="Buscar por nombre, correo o rol..."
+                        aria-label="Buscar usuarios"
+                    />
+                </div>
 
                 <div className="users-management-actions">
 
@@ -301,7 +323,7 @@ function UsersManagement() {
                             src="/icons/add_icon.svg"
                             alt=""
                         />
-                        Crear usuario
+            
                     </button>
 
                 </div>
@@ -310,63 +332,69 @@ function UsersManagement() {
 
             {loading && <p>Cargando usuarios...</p>}
 
-                    {error && <p>{error}</p>}
+            {error && <p>{error}</p>}
 
-                    {!loading && !error && (
-                        <div className="users-list">
+            {!loading && !error && (
+                <div className="users-list">
 
-                            {users.map((user) => (
-                                <div
-                                    className="user-item"
-                                    key={user._id}
+                    {filteredUsers.map((user) => (
+                        <div
+                            className="user-item"
+                            key={user._id}
+                        >
+
+                            <div>
+                                <strong>
+                                    {user.name} {user.lastName}
+                                </strong>
+
+                                <p>{user.email}</p>
+                            </div>
+
+                            <div className="user-actions">
+
+                                <span>{user.role}</span>
+
+                                <button
+                                    type="button"
+                                    className="user-action-button"
+                                    onClick={() =>
+                                        handleEditUser(user)
+                                    }
+                                    aria-label={`Editar usuario ${user.name}`}
                                 >
+                                    <img
+                                        src="/icons/edit_icon.svg"
+                                        alt=""
+                                    />
+                                </button>
 
-                                    <div>
-                                        <strong>
-                                            {user.name} {user.lastName}
-                                        </strong>
+                                <button
+                                    type="button"
+                                    className="user-action-button"
+                                    onClick={() =>
+                                        handleDeleteUser(user._id)
+                                    }
+                                    aria-label={`Eliminar usuario ${user.name}`}
+                                >
+                                    <img
+                                        src="/icons/delete_icon.svg"
+                                        alt=""
+                                    />
+                                </button>
 
-                                        <p>{user.email}</p>
-                                    </div>
-
-                                    <div className="user-actions">
-
-                                        <span>{user.role}</span>
-
-                                        <button
-                                            type="button"
-                                            className="user-action-button"
-                                            onClick={() =>
-                                                handleEditUser(user)
-                                            }
-                                            aria-label={`Editar usuario ${user.name}`}
-                                        >
-                                            <img
-                                                src="/icons/edit_icon.svg"
-                                                alt=""
-                                            />
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            className="user-action-button"
-                                            onClick={() =>
-                                                handleDeleteUser(user._id)
-                                            }
-                                            aria-label={`Eliminar usuario ${user.name}`}
-                                        >
-                                            <img
-                                                src="/icons/delete_icon.svg"
-                                                alt=""
-                                            />
-                                        </button>
-
-                                    </div>
-
-                                </div>
-                            ))}
+                            </div>
 
                         </div>
+                    ))}
+
+                    {filteredUsers.length === 0 && (
+                        <p className="users-empty">
+                            No se encontraron usuarios.
+                        </p>
+                    )}
+
+                </div>
             )}
 
         </section>

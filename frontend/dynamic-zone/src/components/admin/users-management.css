@@ -121,8 +121,8 @@
 }
 
 .add-user-button img {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
 }
 
 .add-user-button {
@@ -140,6 +140,44 @@
 .add-user-button:active {
     transform: translateY(0);
 }
+
+
+.users-search {
+    width: 100%;
+    margin: 16px 0 20px;
+}
+
+.users-search input {
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 16px;
+    color: #292323;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #e8e1df;
+    border-radius: 12px;
+    outline: none;
+    font: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.users-search input::placeholder {
+    color: #928987;
+}
+
+.users-search input:focus {
+    border-color: #a31a1a;
+    box-shadow: 0 0 0 3px rgba(163, 26, 26, 0.09);
+}
+
+.users-empty {
+    padding: 24px 12px;
+    color: #77716f;
+    text-align: center;
+    font-size: 14px;
+}
+
 
 .user-actions {
     display: flex;

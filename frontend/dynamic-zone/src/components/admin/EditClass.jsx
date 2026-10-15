@@ -81,7 +81,6 @@ function EditClass({ classes, onClassUpdated }) {
 
   return (
     <section className="create-class">
-      <h2>Modificar clase</h2>
 
       {message && (
         <p className="create-class-message">

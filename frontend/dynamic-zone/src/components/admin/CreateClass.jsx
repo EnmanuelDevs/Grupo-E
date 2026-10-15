@@ -175,7 +175,6 @@ function CreateClass({ onClassCreated }) {
 
   return (
     <section className="create-class">
-      <h2>Crear nueva clase</h2>
 
       <form onSubmit={handleSubmit}>
         <label>

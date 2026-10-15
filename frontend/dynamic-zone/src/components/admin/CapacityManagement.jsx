@@ -68,7 +68,6 @@ function CapacityManagement({ classes, onCapacityUpdated }) {
     return (
         <section className="create-class">
 
-            <h2>Gestionar capacidad de clases</h2>
 
             {message && (
                 <p className="create-class-message">

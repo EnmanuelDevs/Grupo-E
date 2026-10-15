@@ -613,6 +613,7 @@ function AdminDashboard() {
                     <th scope="col">Instructor</th>
                     <th scope="col">Capacidad</th>
                     <th scope="col">Cupos</th>
+                    <th scope="col">Horarios</th>
                     <th scope="col" style={{ textAlign: "center" }}>
                       Acciones
                     </th>
@@ -634,15 +635,48 @@ function AdminDashboard() {
                       </td>
                       <td>
                         <span
-                          className={`admin-spots ${
-                            item.availableSpots > 0 ? "admin-spots-open" : ""
-                          }`}
+                          className={`admin-spots ${item.availableSpots > 0 ? "admin-spots-open" : ""
+                            }`}
                         >
                           {Number.isFinite(item.availableSpots)
                             ? item.availableSpots
                             : "Sin dato"}
                         </span>
                       </td>
+
+                      
+                      <td>
+                        {item.schedules?.length > 0 ? (
+                          <div className="class-schedules-list">
+                            {item.schedules.map((schedule) => (
+                              <div
+                                key={schedule._id}
+                                className="class-schedule-item"
+                              >
+                                <span>
+                                  {new Date(`${schedule.date}T00:00:00`).toLocaleDateString(
+                                    "es-DO",
+                                    {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                      timeZone: "UTC",
+                                    },
+                                  )}
+                                </span>
+
+                                <span>
+                                  {schedule.time}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="no-schedule">Sin horario</span>
+                        )}
+                      </td>
+
+
                       <td className="admin-table-actions">
                         <button
                           className="btn-admin-add"

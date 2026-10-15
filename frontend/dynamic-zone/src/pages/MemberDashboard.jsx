@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./member-dashboard.css";
 import Swal from "sweetalert2";
-import { ShieldCheck, CalendarCheck, Dumbbell, } from "lucide-react";
+import { ShieldCheck, CalendarCheck, Dumbbell, 
+  LogOut, CalendarDays, Clock3, Users, UserRound, CalendarX
+} from "lucide-react";
 
 
 
@@ -299,6 +301,7 @@ const MemberDashboard = () => {
               {user?.lastName?.charAt(0)}
             </div>
             <button onClick={handleLogout} className="btn-logout">
+              <LogOut size={18} />
               Cerrar Sesión
             </button>
           </div>
@@ -376,63 +379,37 @@ const MemberDashboard = () => {
                                     schedule.participants.includes(userId);
 
                                   return (
-                                    <li
-                                      key={schedule._id}
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        background: "#f8f9fa",
-                                        padding: "10px",
-                                        borderRadius: "8px",
-                                        marginBottom: "8px",
-                                      }}
-                                    >
-                                      <div>
-                                        <span
-                                          className="schedule-date"
-                                          style={{
-                                            fontWeight: "500",
-                                            marginRight: "10px",
-                                          }}
-                                        >
-                                          {schedule.date}
-                                        </span>
-                                        <span
-                                          className="schedule-time"
-                                          style={{
-                                            color: "#4b5563",
-                                            marginRight: "15px",
-                                          }}
-                                        >
-                                          {schedule.time}
-                                        </span>
-                                        <span
-                                          className="spots-badge"
-                                          style={{ fontSize: "0.8rem" }}
-                                        >
-                                          {schedule.availableSpots} cupos
-                                        </span>
+
+                                    <li key={schedule._id} className="member-schedule-row">
+                                      <div className="member-schedule-info">
+                                        <div className="member-schedule-date">
+                                          <CalendarDays size={17} />
+                                          <span>{schedule.date}</span>
+                                        </div>
+
+                                        <div className="member-schedule-time">
+                                          <Clock3 size={17} />
+                                          <span>{schedule.time}</span>
+                                        </div>
+
+                                        <div className="member-schedule-spots">
+                                          <Users size={17} />
+                                          <strong>{schedule.availableSpots}</strong>
+                                          <span>cupos disponibles</span>
+                                        </div>
                                       </div>
 
                                       <button
-                                        style={{
-                                          padding: "6px 12px",
-                                          fontSize: "0.85rem",
-                                        }}
                                         className={
-                                          isReserved
-                                            ? "btn-secondary"
-                                            : "btn-primary"
+                                          isReserved ? "btn-secondary" : "btn-primary"
                                         }
                                         disabled={
-                                          schedule.availableSpots <= 0 ||
-                                          isReserved
+                                          schedule.availableSpots <= 0 || isReserved
                                         }
                                         onClick={() =>
                                           handleReserve(
                                             schedule._id,
-                                            cls.id || cls._id,
+                                            cls.id || cls._id
                                           )
                                         }
                                       >
@@ -443,6 +420,7 @@ const MemberDashboard = () => {
                                             : "Agotado"}
                                       </button>
                                     </li>
+
                                   );
                                 })}
                               </ul>
@@ -477,63 +455,50 @@ const MemberDashboard = () => {
                 ) : (
                   <ul className="classes-list">
                     {myReservations.map((res) => (
-                      <li
-                        key={`my-res-${res.scheduleId}`}
-                        className="class-item"
-                      >
+
+                      <li key={`my-res-${res.scheduleId}`} className="class-item reservation-item">
                         <div className="class-info">
                           <div className="class-header">
                             <h3>{res.title}</h3>
+
                             <span className="metric-badge success">
                               Confirmada
                             </span>
                           </div>
 
-                          <div
-                            style={{
-                              marginTop: "10px",
-                              background: "#f0fdf4",
-                              padding: "8px",
-                              borderRadius: "6px",
-                              border: "1px solid #dcfce7",
-                            }}
-                          >
-                            <p
-                              style={{
-                                margin: 0,
-                                color: "#166534",
-                                fontSize: "0.9rem",
-                                fontWeight: "500",
-                              }}
-                            >
-                              {res.date} a las {res.time}
-                            </p>
-                          </div>
+                          <div className="reservation-details">
+                            <div className="reservation-detail">
+                              <CalendarDays size={17} />
+                              <span>{res.date}</span>
+                            </div>
 
-                          <p
-                            className="class-instructor"
-                            style={{ marginTop: "10px" }}
-                          >
-                            <strong>Instructor:</strong>{" "}
-                            {res.instructor?.name
-                              ? `${res.instructor.name} ${res.instructor.lastName}`
-                              : res.instructor}
-                          </p>
+                            <div className="reservation-detail">
+                              <Clock3 size={17} />
+                              <span>{res.time}</span>
+                            </div>
+
+                            <div className="reservation-detail">
+                              <UserRound size={17} />
+                              <span>
+                                {res.instructor?.name
+                                  ? `${res.instructor.name} ${res.instructor.lastName || ""}`.trim()
+                                  : res.instructor || "Instructor por asignar"}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div style={{ marginTop: "15px" }}>
-                          <button
-                            className="btn-cancel-reservation"
-                            onClick={() =>
-                              handleCancelReservation(
-                                res.scheduleId,
-                                res.classId,
-                              )
-                            }
-                          >
-                            Cancelar reserva
-                          </button>
-                        </div>
+
+                        <button
+                          className="btn-cancel-reservation"
+                          onClick={() =>
+                            handleCancelReservation(res.scheduleId, res.classId)
+                          }
+                        >
+                          <CalendarX size={16} />
+                          Cancelar reserva
+                        </button>
                       </li>
+
                     ))}
                   </ul>
                 )}
