@@ -57,6 +57,13 @@ export const loginUsuario = async (req, res) => {
             return res.status(401).json({ success: false, data: null, error: 'Credenciales incorrectas' });
         }
 
+        if (usuario.active === false) {
+            return res.status(403).json({
+                success: false,
+                error: "La cuenta se encuentra desactivada."
+        });
+        }
+
         const esPasswordValido = await bcrypt.compare(password, usuario.password);
         if (!esPasswordValido) {
             return res.status(401).json({ success: false, data: null, error: 'Credenciales incorrectas' });
