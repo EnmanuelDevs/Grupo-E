@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 
 export const registerUsuario = async (req, res) => {
     try {
-        const { name, lastName, email, password, role } = req.body;
+        const { name, lastName, email, password } = req.body;
 
         if (!name || !lastName || !email || !password) {
             return res.status(400).json({
@@ -27,7 +27,7 @@ export const registerUsuario = async (req, res) => {
             lastName,
             email,
             password: passwordEncriptada,
-            role
+            role: "member"
         });
 
         await nuevoUsuario.save();
@@ -55,6 +55,13 @@ export const loginUsuario = async (req, res) => {
         const usuario = await User.findOne({ email });
         if (!usuario) {
             return res.status(401).json({ success: false, data: null, error: 'Credenciales incorrectas' });
+        }
+
+        if (usuario.active === false) {
+            return res.status(403).json({
+                success: false,
+                error: "La cuenta se encuentra desactivada."
+        });
         }
 
         const esPasswordValido = await bcrypt.compare(password, usuario.password);
