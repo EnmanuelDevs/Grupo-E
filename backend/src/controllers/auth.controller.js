@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 
 export const registerUsuario = async (req, res) => {
     try {
-        const { name, lastName, email, password, role } = req.body;
+        const { name, lastName, email, password } = req.body;
 
         if (!name || !lastName || !email || !password) {
             return res.status(400).json({
@@ -27,7 +27,7 @@ export const registerUsuario = async (req, res) => {
             lastName,
             email,
             password: passwordEncriptada,
-            role
+            role: "member"
         });
 
         await nuevoUsuario.save();
