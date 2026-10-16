@@ -14,7 +14,7 @@ export const asignarHorario = async (req, res) => {
       });
     }
 
-    const zone = process.env.GYM_TIMEZONE || "America/La_Paz";
+    const zone = process.env.GYM_TIMEZONE || "America/Santo_Domingo";
     const startsAt = DateTime.fromISO(`${date}T${time}`, { zone });
 
     if (!startsAt.isValid || startsAt.toMillis() <= Date.now()) {

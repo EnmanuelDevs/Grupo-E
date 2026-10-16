@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../../services/api";
+import { Trophy } from "lucide-react";
 
 export default function DemandReport() {
   const [reportData, setReportData] = useState([]);
@@ -54,29 +55,39 @@ export default function DemandReport() {
       ? Math.max(...reportData.map((item) => item.totalReservations))
       : 1;
 
-  const getMedal = (index) => {
-    if (index === 0)
-      return (
-        <span style={{ fontSize: "1.2rem" }} title="1er Lugar">
-          🥇
-        </span>
-      );
-    if (index === 1)
-      return (
-        <span style={{ fontSize: "1.2rem" }} title="2do Lugar">
-          🥈
-        </span>
-      );
-    if (index === 2)
-      return (
-        <span style={{ fontSize: "1.2rem" }} title="3er Lugar">
-          🥉
-        </span>
-      );
-    return (
-      <span style={{ color: "#9ca3af", fontWeight: "bold" }}>#{index + 1}</span>
-    );
+  
+const getMedal = (index) => {
+  const colors = {
+    0: "#d4a017",
+    1: "#8b95a5",
+    2: "#b87333",
   };
+
+  if (index < 3) {
+    return (
+      <Trophy
+        size={22}
+        color={colors[index]}
+        strokeWidth={2}
+        aria-label={`${index + 1}° lugar`}
+        title={`${index + 1}° lugar`}
+      />
+    );
+  }
+
+  return (
+    <span
+      style={{
+        color: "#6b7280",
+        fontWeight: 700,
+        fontSize: "1rem",
+      }}
+    >
+      {index + 1}
+    </span>
+  );
+};
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>

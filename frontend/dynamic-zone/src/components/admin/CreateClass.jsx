@@ -57,6 +57,12 @@ function CreateClass({ onClassCreated }) {
           confirmButtonColor: "#e11d48",
           background: "#f8f9fa",
           color: "#333",
+
+          customClass: {
+            popup: "gym-swal-popup",
+            confirmButton: "gym-swal-confirm",
+            cancelButton: "gym-swal-cancel"
+          }
         });
       }
     };
@@ -85,6 +91,12 @@ function CreateClass({ onClassCreated }) {
         icon: "error",
         confirmButtonColor: "#e11d48",
         background: "#f8f9fa",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
       return;
     }
@@ -96,6 +108,12 @@ function CreateClass({ onClassCreated }) {
         icon: "warning",
         confirmButtonColor: "#e11d48",
         background: "#f8f9fa",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
       return;
     }
@@ -107,6 +125,12 @@ function CreateClass({ onClassCreated }) {
         icon: "warning",
         confirmButtonColor: "#e11d48",
         background: "#f8f9fa",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
       return;
     }
@@ -114,7 +138,8 @@ function CreateClass({ onClassCreated }) {
     try {
       const token = localStorage.getItem("token");
 
-      const data = await apiRequest("/classes", {
+      // 1. Crear la clase
+      const response = await apiRequest("/classes", {
         method: "POST",
         token,
         body: {
@@ -125,9 +150,16 @@ function CreateClass({ onClassCreated }) {
         },
       });
 
-      const classId = data.data ? data.data._id : data._id;
+      const classId = response.data?.data?._id || response.data?._id || response._id;
 
-      if (classId) {
+      if (!classId) {
+        throw new Error(
+          "El servidor no devolvió el ID de la clase creada. Revisa la respuesta del backend."
+        );
+      }
+
+      // La clase ya se guardó. Ahora intentamos crear su horario.
+      try {
         await apiRequest(`/classes/${classId}/schedule`, {
           method: "POST",
           token,
@@ -136,20 +168,46 @@ function CreateClass({ onClassCreated }) {
             time: formData.time,
           },
         });
+
+        await Swal.fire({
+          title: "¡Clase creada!",
+          text: "La clase y su horario se han registrado exitosamente.",
+          icon: "success",
+          confirmButtonText: "Excelente",
+          confirmButtonColor: "#10b981",
+          background: "#f8f9fa",
+          color: "#333",
+
+          customClass: {
+            popup: "gym-swal-popup",
+            confirmButton: "gym-swal-confirm",
+            cancelButton: "gym-swal-cancel"
+          }
+        });
+      } catch (scheduleError) {
+        console.error("La clase se guardó, pero falló el horario:", scheduleError);
+
+        await Swal.fire({
+          title: "Clase guardada, pero sin horario",
+          text:
+            scheduleError.message ||
+            "La clase se guardó, pero no se pudo registrar el horario. No vuelvas a crear la clase para evitar duplicados.",
+          icon: "warning",
+          confirmButtonColor: "#e11d48",
+          background: "#f8f9fa",
+          color: "#333",
+
+          customClass: {
+            popup: "gym-swal-popup",
+            confirmButton: "gym-swal-confirm",
+            cancelButton: "gym-swal-cancel"
+          }
+        });
       }
 
-      Swal.fire({
-        title: "¡Clase Creada!",
-        text: "La clase y su horario se han registrado exitosamente.",
-        icon: "success",
-        confirmButtonText: "Excelente",
-        confirmButtonColor: "#10b981",
-        background: "#f8f9fa",
-        color: "#333",
-      });
-
+      // Actualizar la lista incluso si falló la creación del horario.
       if (onClassCreated) {
-        onClassCreated();
+        await onClassCreated();
       }
 
       setFormData({
@@ -161,14 +219,21 @@ function CreateClass({ onClassCreated }) {
         time: "",
       });
     } catch (error) {
-      console.error("Error creando la clase o el horario:", error);
+      console.error("Error creando la clase:", error);
+
       Swal.fire({
         title: "Error al crear la clase",
-        text:
-          error.message || "No se pudo crear la clase o asignar su horario.",
+        text: error.message || "No se pudo guardar la clase.",
         icon: "error",
         confirmButtonColor: "#e11d48",
         background: "#f8f9fa",
+        color: "#333",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
     }
   };

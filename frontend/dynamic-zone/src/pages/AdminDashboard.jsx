@@ -72,6 +72,7 @@ function AdminDashboard() {
       return () => controller.abort();
     }
 
+
     async function loadDashboard() {
       try {
         const options = { token, signal: controller.signal };
@@ -103,33 +104,36 @@ function AdminDashboard() {
         await apiRequest("/auth/admin-dashboard", options);
 
         if (controller.signal.aborted) return;
-        setUser(profile);
 
+        setUser(profile);
+        setAccessError("");
+
+        // Cargar las clases registradas.
         try {
           const records = await apiRequest("/classes", options);
 
           if (!Array.isArray(records)) {
             throw new Error(
-              "El listado de clases no tiene el formato esperado.",
+              "El backend no devolvió una lista válida de clases."
             );
           }
 
-          if (!controller.signal.aborted) setClasses(records);
+          if (!controller.signal.aborted) {
+            setClasses(records);
+            setClassesError("");
+          }
         } catch (error) {
-          if (error.name === "AbortError" || controller.signal.aborted) {
-            return;
+          if (!controller.signal.aborted) {
+            console.error("Error cargando las clases:", error);
+            setClassesError(
+              error.message || "No se pudieron cargar las clases."
+            );
           }
-
-          if (error.status === 401 || error.status === 403) {
-            throw error;
-          }
-
-          setClassesError(error.message);
         }
       } catch (error) {
-        if (error.name === "AbortError" || controller.signal.aborted) {
-          return;
-        }
+        if (controller.signal.aborted) return;
+
+        console.error("Error validando el acceso administrativo:", error);
 
         if (error.status === 401) {
           localStorage.removeItem("token");
@@ -144,13 +148,16 @@ function AdminDashboard() {
           setAccessError(
             error.status === 403
               ? "Tu cuenta no tiene permiso para acceder al panel administrativo."
-              : error.message,
+              : error.message || "No se pudo verificar el acceso administrativo."
           );
         }
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
+
 
     loadDashboard();
 
@@ -187,7 +194,13 @@ function AdminDashboard() {
       html: `
         <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-top:15px;">
           <label for="swal-date" style="font-size:0.9rem;font-weight:bold;color:#374151;">Fecha de la clase:</label>
-          <input id="swal-date" type="date" class="swal2-input" style="margin:0;width:100%;max-width:100%;box-sizing:border-box;">
+          <input id="swal-date" type="date" class="swal2-input"
+  min="${new Date(
+        Date.now() -
+        new Date().getTimezoneOffset() * 60000
+      ).toISOString().slice(0, 10)}"
+  style="margin:0;width:100%;max-width:100%;box-sizing:border-box;"
+>
           <label for="swal-time" style="font-size:0.9rem;font-weight:bold;color:#374151;margin-top:10px;">Hora de la clase:</label>
           <input id="swal-time" type="time" class="swal2-input" style="margin:0;width:100%;max-width:100%;box-sizing:border-box;">
         </div>
@@ -197,6 +210,13 @@ function AdminDashboard() {
       confirmButtonText: "Guardar horario",
       cancelButtonText: "Cancelar",
       confirmButtonColor: "#a31a1a",
+
+      customClass: {
+        popup: "gym-swal-popup",
+        confirmButton: "gym-swal-confirm",
+        cancelButton: "gym-swal-cancel"
+      },
+
       preConfirm: () => {
         const date = document.getElementById("swal-date").value;
         const time = document.getElementById("swal-time").value;
@@ -227,6 +247,12 @@ function AdminDashboard() {
         text: `Se ha añadido un nuevo horario a la clase ${classTitle}.`,
         icon: "success",
         confirmButtonColor: "#a31a1a",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
 
       reload();
@@ -238,6 +264,12 @@ function AdminDashboard() {
         text: error.message || "No se pudo agregar el horario.",
         icon: "error",
         confirmButtonColor: "#a31a1a",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
     }
   };
@@ -252,6 +284,12 @@ function AdminDashboard() {
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Sí, eliminar clase",
       cancelButtonText: "Cancelar",
+
+      customClass: {
+        popup: "gym-swal-popup",
+        confirmButton: "gym-swal-confirm",
+        cancelButton: "gym-swal-cancel"
+      }
     });
 
     if (!result.isConfirmed) return;
@@ -267,6 +305,12 @@ function AdminDashboard() {
         text: "La clase y sus horarios han sido borrados exitosamente.",
         icon: "success",
         confirmButtonColor: "#a31a1a",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
 
       reload();
@@ -278,6 +322,12 @@ function AdminDashboard() {
         text: error.message || "No se pudo eliminar la clase.",
         icon: "error",
         confirmButtonColor: "#a31a1a",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
     }
   };
@@ -644,7 +694,7 @@ function AdminDashboard() {
                         </span>
                       </td>
 
-                      
+
                       <td>
                         {item.schedules?.length > 0 ? (
                           <div className="class-schedules-list">

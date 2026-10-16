@@ -1,6 +1,7 @@
 import Class from "../models/class.model.js";
 import Schedule from "../models/schedule.model.js";
 import User from "../models/User.js";
+import { DateTime } from "luxon";
 
 export const getClasses = async (req, res) => {
   try {
@@ -250,6 +251,31 @@ export const reserveClass = async (req, res) => {
         error: "El horario seleccionado no existe.",
       });
     }
+
+    
+    
+    const zone = process.env.GYM_TIMEZONE || "America/Santo_Domingo";
+
+    const startsAt = schedule.startsAt
+      ? DateTime.fromJSDate(schedule.startsAt)
+      : DateTime.fromISO(`${schedule.date}T${schedule.time}`, { zone });
+
+    if (!startsAt.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: "No se pudo validar la fecha y hora de esta clase.",
+      });
+    }
+
+    if (startsAt.toMillis() <= Date.now()) {
+      return res.status(400).json({
+        success: false,
+        error: "Esta clase ya comenzó o ha finalizado. No puedes reservarla.",
+      });
+    }
+
+    
+
 
     if (schedule.participants && schedule.participants.includes(userId)) {
       return res.status(400).json({

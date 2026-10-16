@@ -2,9 +2,43 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./member-dashboard.css";
 import Swal from "sweetalert2";
-import { ShieldCheck, CalendarCheck, Dumbbell, 
+import {
+  ShieldCheck, CalendarCheck, Dumbbell,
   LogOut, CalendarDays, Clock3, Users, UserRound, CalendarX
 } from "lucide-react";
+
+
+
+const getSantoDomingoDateTime = () => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santo_Domingo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+
+  const get = (type) => parts.find((part) => part.type === type).value;
+
+  return {
+    date: `${get("year")}-${get("month")}-${get("day")}`,
+    time: `${get("hour")}:${get("minute")}`,
+  };
+};
+
+const isSchedulePast = (schedule) => {
+  if (!schedule?.date || !schedule?.time) return false;
+
+  const now = getSantoDomingoDateTime();
+
+  return (
+    schedule.date < now.date ||
+    (schedule.date === now.date && schedule.time <= now.time)
+  );
+};
+
 
 
 
@@ -67,6 +101,18 @@ const MemberDashboard = () => {
   };
 
   const userId = user?.id || user?._id;
+
+
+
+  const classesWithUpcomingSchedules = classes
+    .map((cls) => ({
+      ...cls,
+      schedules: (cls.schedules || []).filter(
+        (schedule) => !isSchedulePast(schedule)
+      ),
+    }))
+    .filter((cls) => cls.schedules.length > 0);
+
 
   const myReservations = [];
   classes.forEach((cls) => {
@@ -259,6 +305,12 @@ const MemberDashboard = () => {
           confirmButtonColor: "#e11d48",
           background: "#f8f9fa",
           color: "#333",
+
+          customClass: {
+            popup: "gym-swal-popup",
+            confirmButton: "gym-swal-confirm",
+            cancelButton: "gym-swal-cancel"
+          }
         });
       }
     } catch (error) {
@@ -270,6 +322,12 @@ const MemberDashboard = () => {
         icon: "error",
         confirmButtonText: "Cerrar",
         confirmButtonColor: "#333",
+
+        customClass: {
+          popup: "gym-swal-popup",
+          confirmButton: "gym-swal-confirm",
+          cancelButton: "gym-swal-cancel"
+        }
       });
     }
   };
@@ -328,7 +386,9 @@ const MemberDashboard = () => {
                 <Dumbbell size={30} strokeWidth={1.7} />
               </div>
               <span className="metric-title">Clases Disponibles</span>
-              <span className="metric-value">{classes.length} opciones</span>
+              <span className="metric-value">
+                {classesWithUpcomingSchedules.length} opciones
+              </span>
             </div>
           </section>
 
@@ -339,13 +399,13 @@ const MemberDashboard = () => {
               </div>
 
               <div className="card-body">
-                {classes.length === 0 ? (
+                {classesWithUpcomingSchedules.length === 0 ? (
                   <p className="empty-text">
-                    No hay clases programadas por el momento.
+                    No hay clases futuras programadas por el momento.
                   </p>
                 ) : (
                   <ul className="classes-list">
-                    {classes.map((cls) => (
+                    {classesWithUpcomingSchedules.map((cls) => (
                       <li key={cls.id || cls._id} className="class-item">
                         <div className="class-info">
                           <div className="class-header">
@@ -378,6 +438,8 @@ const MemberDashboard = () => {
                                     schedule.participants &&
                                     schedule.participants.includes(userId);
 
+                                  const isPast = isSchedulePast(schedule);
+
                                   return (
 
                                     <li key={schedule._id} className="member-schedule-row">
@@ -399,26 +461,27 @@ const MemberDashboard = () => {
                                         </div>
                                       </div>
 
+
                                       <button
                                         className={
-                                          isReserved ? "btn-secondary" : "btn-primary"
+                                          isReserved || isPast ? "btn-secondary" : "btn-primary"
                                         }
                                         disabled={
-                                          schedule.availableSpots <= 0 || isReserved
+                                          isPast || schedule.availableSpots <= 0 || isReserved
                                         }
                                         onClick={() =>
-                                          handleReserve(
-                                            schedule._id,
-                                            cls.id || cls._id
-                                          )
+                                          handleReserve(schedule._id, cls.id || cls._id)
                                         }
                                       >
-                                        {isReserved
-                                          ? "Reservado"
-                                          : schedule.availableSpots > 0
-                                            ? "Reservar"
-                                            : "Agotado"}
+                                        {isPast
+                                          ? "Clase finalizada"
+                                          : isReserved
+                                            ? "Reservado"
+                                            : schedule.availableSpots > 0
+                                              ? "Reservar"
+                                              : "Agotado"}
                                       </button>
+
                                     </li>
 
                                   );

@@ -234,11 +234,9 @@
   gap: 24px;
   padding: 30px 34px;
   margin-bottom: 28px;
-  background: linear-gradient(
-    125deg,
-    rgba(38, 38, 38, 0.98),
-    rgba(65, 28, 28, 0.96)
-  );
+  background: linear-gradient(125deg,
+      rgba(38, 38, 38, 0.98),
+      rgba(65, 28, 28, 0.96));
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 22px;
@@ -259,7 +257,7 @@
   pointer-events: none;
 }
 
-.admin-header > * {
+.admin-header>* {
   position: relative;
   z-index: 1;
 }
@@ -623,14 +621,14 @@
   min-width: 140px;
 }
 
-.admin-table td:first-child > strong {
+.admin-table td:first-child>strong {
   display: block;
   color: #242424;
   font-size: 14px;
   font-weight: 650;
 }
 
-.admin-table td:first-child > span {
+.admin-table td:first-child>span {
   display: block;
   max-width: 360px;
   margin-top: 7px;
@@ -646,6 +644,7 @@
 
 
 @media (max-width: 1050px) {
+
   .admin-table th,
   .admin-table td {
     padding: 15px 16px;
@@ -1166,11 +1165,13 @@
 
 .admin-modal {
   position: relative;
-  width: min(100%, 760px);
+  width: min(1200px, 96vw);
+  max-width: 1200px;
   max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
   color: #292323;
   background: #fcfaf9;
   border: 1px solid rgba(255, 255, 255, 0.65);
@@ -1231,9 +1232,16 @@
 }
 
 .admin-modal-content {
-  padding: 26px;
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+.admin-modal-content > * {
+  min-width: 0;
 }
 
 /* Ajustes para tabletas y móviles */
@@ -1300,6 +1308,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .admin-modal-overlay,
   .admin-modal {
     animation: none;
